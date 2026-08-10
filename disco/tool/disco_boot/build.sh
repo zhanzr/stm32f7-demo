@@ -1,4 +1,5 @@
-﻿# Build the STM32F769NI CoreMark benchmark with CMake + Ninja.
+﻿#!/usr/bin/env bash
+# Build the STM32F769NI (disco) bootloader with CMake + Ninja.
 # Run with:  bash build.sh    (or ./build.sh on Linux)
 set -euo pipefail
 

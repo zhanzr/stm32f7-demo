@@ -1,4 +1,4 @@
-# Build the STM32H723ZGT6 Dhrystone benchmark with CMake + Ninja.
+﻿# Build the STM32F769NI Dhrystone benchmark with CMake + Ninja.
 # Run with:  bash build.sh    (or ./build.sh on Linux)
 set -euo pipefail
 

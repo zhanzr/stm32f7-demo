@@ -1,24 +1,21 @@
-/* GNU ARM GCC linker script for STM32F769NIH6 (STM32F769I-Discovery).
+/* qspi_map stage-2 app linker script - runs entirely from the QSPI-mapped
+ * space (QUADSPI memory-mapped mode).
  *
- * Memory map (F769NI):
- *   FLASH      :   2 MB @ 0x08000000   (execution)
- *   DTCM       : 128 KB @ 0x20000000   (stack + heap + RW/ZI, core-private)
- *   AXI SRAM1-3: 400 KB @ 0x20020000   (RESERVED - not used by the benchmark apps)
+ * Memory map:
+ *   QSPI (rx) : 8 MB @ 0x90000000   (vector table + code + rodata + .data LMA)
+ *   DTCM (xrw): 128 KB @ 0x20000000 (data + bss + stack)
  *
- * RW/ZI lands in DTCM (core-private, no clock gate), so no AHB SRAM clock
- * enable is required for normal operation.
- *
- * Symbols consumed by startup_stm32f769xx.s:
- *   _estack, _sidata, _sdata, _edata, _sbss, _ebss
- * Symbols consumed by syscalls.c (_sbrk): end / _end
+ * The bootloader puts the QUADSPI in memory-mapped mode and jumps to the reset
+ * vector at 0x90000000. This app deliberately does NOT own the RCC/PLL2 clocks
+ * (the bootloader does) - see system_app.c.
  */
 
 ENTRY(Reset_Handler)
 
 MEMORY
 {
-  FLASH (rx)   : ORIGIN = 0x08000000, LENGTH = 2M
-  DTCM (xrw)   : ORIGIN = 0x20000000, LENGTH = 128K
+  QSPI (rx)  : ORIGIN = 0x90000000, LENGTH = 8M
+  DTCM (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
 }
 
 _estack        = ORIGIN(DTCM) + LENGTH(DTCM);  /* top of DTCM, stack grows down */
@@ -32,7 +29,7 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector))
     . = ALIGN(4);
-  } >FLASH
+  } >QSPI
 
   .text :
   {
@@ -48,7 +45,7 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;
-  } >FLASH
+  } >QSPI
 
   .rodata :
   {
@@ -56,26 +53,26 @@ SECTIONS
     *(.rodata)
     *(.rodata*)
     . = ALIGN(4);
-  } >FLASH
+  } >QSPI
 
   .ARM.extab :
   {
     *(.ARM.extab* .gnu.linkonce.armextab.*)
-  } >FLASH
+  } >QSPI
 
   .ARM :
   {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >FLASH
+  } >QSPI
 
   .preinit_array :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH
+  } >QSPI
 
   .init_array :
   {
@@ -83,7 +80,7 @@ SECTIONS
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH
+  } >QSPI
 
   .fini_array :
   {
@@ -91,7 +88,7 @@ SECTIONS
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH
+  } >QSPI
 
   _sidata = LOADADDR(.data);
 
@@ -105,7 +102,7 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;
     __data_end__ = _edata;
-  } >DTCM AT> FLASH
+  } >DTCM AT> QSPI
 
   .bss :
   {

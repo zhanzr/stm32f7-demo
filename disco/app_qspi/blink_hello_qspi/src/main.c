@@ -3,8 +3,7 @@
 #include "board.h"
 #include "uart_printf.h"
 
-/* On-board LEDs: LD1 PJ13, LD2 PJ5, LD3 PA12, all HIGH active (SET = ON).
- * See the STM32F769I-Discovery user manual / schematic (UM2033, MB1166). */
+/* On-board LEDs: LD1 PJ13, LD2 PJ5, LD3 PA12, all HIGH active (SET = ON). */
 #define LED1_PORT GPIOJ
 #define LED1_PIN  GPIO_PIN_13
 #define LED2_PORT GPIOJ
@@ -14,15 +13,9 @@
 
 /* ------------------------------------------------------------------------ */
 /* ADC internal channels (see RM0410: ADC1_IN17 = VREFINT, ADC1_IN18 =
- * temperature sensor / VBAT):
- *  - VREFINT : internal bandgap reference (~1.2 V nominal)
- *  - Temp    : die temperature sensor (needs the TSVREFE enable)
- *  - VBAT    : battery pin, fed through an internal /4 divider
- * Factory calibration (stm32f769xx.h, acquired at Vref+ = 3.3 V):
- *  - VREFINT_CAL @ 0x1FF0F44A
- *  - TS_CAL1 @ 0x1FF0F44C  (30  °C)
- *  - TS_CAL2 @ 0x1FF0F44E  (110 °C)
- */
+ * temperature sensor / VBAT). Factory calibration (stm32f769xx.h, at Vref+
+ * = 3.3 V): VREFINT_CAL @ 0x1FF0F44A, TS_CAL1 @ 0x1FF0F44C (30 °C),
+ * TS_CAL2 @ 0x1FF0F44E (110 °C). */
 #define ADC_CAL_VREF_MV   3300U
 #define ADC_MAX_VALUE     4095U
 
@@ -145,7 +138,7 @@ int main(void)
     LED_Init();
     ADC_Init();
 
-    printf("\r\n=== blink_hello on STM32F769NI @ %lu Hz ===\r\n",
+    printf("\r\n=== blink_hello (QSPI) on STM32F769NI @ %lu Hz ===\r\n",
            (unsigned long)SystemCoreClock);
 
     while (1)

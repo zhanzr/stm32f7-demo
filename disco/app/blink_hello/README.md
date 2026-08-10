@@ -1,13 +1,13 @@
 # blink_hello — minimal STM32F769NI (STM32F769I-Discovery) template @ 216 MHz
 
 Tiny project template: toggles the three on-board LEDs — **LD1 (PJ13),
-LD2 (PJ5), LD3 (PA12), all high active** — and prints a line over USART1
-(`COMxx` @ 115200 via the on-board ST-Link V2's VCP) on **every toggle**
-(~1 Hz). It also measures the ADC internal channels and prints them each
-second. Everything else — 216 MHz clock init, MPU, I/D caches, UART console,
-SysTick, newlib stubs, startup + linker script — comes from the **shared board
-layer** (`../board`) and toolchain helpers (`../cmake`), so a new project only
-needs its own `src/main.c`.
+LD2 (PJ5), LD3 (PA12), all high active** — and measures the ADC internal
+channels, printing the **current frequency and the ADC values** once per second
+over USART1 (`COMxx` @ 115200 via the on-board ST-Link V2's VCP). Everything
+else — 216 MHz clock init, MPU, I/D caches, UART console, SysTick, newlib
+stubs, startup + linker script — comes from the **shared board layer**
+(`../board`) and toolchain helpers (`../cmake`), so a new project only needs
+its own `src/main.c`.
 
 Use this as the starting skeleton for new disco apps: copy the folder,
 rename the project in `CMakeLists.txt`, and replace `src/main.c`.
@@ -35,7 +35,7 @@ device memory (`VREFINT_CAL` @ `0x1FF0F44A`, `TS_CAL1` @ `0x1FF0F44C` =
 Example output from the board:
 
 ```
-ADC: VREFINT raw=1501 cal=1503 -> VDDA=3304 mV | Temp=44.1 C | VBAT=3.32 V
+ADC: VREFINT raw=1501 cal=1503 -> VDDA=3304 mV | Temp=44.1 C | VBAT=3.32 V @ 216000000 Hz
 ```
 
 ## Build
@@ -58,9 +58,9 @@ ninja
 ninja flash        # probe-rs through the on-board ST-Link V2 (SWD)
 ```
 
-Open `COMxx` at 115200 8-N-1 (ST-Link V2 VCP) — you should see one
-`LED LD1... LD2... LD3... @ 216000000 Hz` line plus the ADC line per second,
-alternating, and the three physical LEDs blinking in sync.
+Open `COMxx` at 115200 8-N-1 (ST-Link V2 VCP) — you should see one ADC line
+per second (with the current frequency), and the three physical LEDs blinking
+in sync.
 
 ## Notes
 

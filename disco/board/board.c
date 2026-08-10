@@ -22,7 +22,7 @@
 #include "swv_printf.h"
 
 /* ------------------------------------------------------------------------ */
-/* Same MPU setup the h723-mini / vendor 216 MHz builds use: a 4 GB region
+/* Same MPU setup the vendor 216 MHz builds use: a 4 GB region
  * with subregions 0/1/2/7 disabled, leaving FLASH/DTCM/SRAM on the privileged
  * default memory map (Normal, write-back, cacheable) and denying access to the
  * rest (0x60000000..0xDFFFFFFF, including the unused SDRAM / FMC space). */
@@ -52,6 +52,15 @@ static void MPU_Config(void)
 /* Clock tree as in the vendor 216 MHz template (HSE 25 MHz -> PLL M=25 N=432
  * P=2 -> 216 MHz SYSCLK, HCLK 216 MHz, APB1 54 MHz, APB2 108 MHz,
  * OverDrive on, VOS scale 1, flash latency 7). */
+#ifdef QSPI_APP
+/* QSPI apps: the bootloader owns the clock tree, so an empty
+ * SystemClock_Config keeps the (identical) app main() callable without
+ * re-configuring RCC and killing the QUADSPI clock the code runs from. */
+void SystemClock_Config(void)
+{
+    /* no-op: disco_boot already configured HSE -> PLL -> 216 MHz + QUADSPI */
+}
+#else
 void SystemClock_Config(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -91,15 +100,22 @@ void SystemClock_Config(void)
         Error_Handler();
     }
 }
+#endif /* QSPI_APP */
 
 /* ------------------------------------------------------------------------ */
 void Board_Init(void)
 {
+#ifndef QSPI_APP
     MPU_Config();
+#else
+    /* disco_boot disables IRQ before jumping to the app; re-enable it here so
+     * HAL_GetTick()/HAL_Delay() (SysTick IRQ) work. */
+    __enable_irq();
+#endif
     SCB_EnableICache();
     SCB_EnableDCache();
 
-    SystemClock_Config();
+    SystemClock_Config();   /* no-op for QSPI apps */
     UART_Init();
     SWV_Init();
 }

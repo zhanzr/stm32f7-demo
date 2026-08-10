@@ -5,14 +5,16 @@ through LTDC with the SDRAM as framebuffer, plus the **FT6206** capacitive
 touch controller on I2C4 — all via the vendor BSP
 (`stm32f769i_discovery_lcd` / `stm32f769i_discovery_ts`).
 
-The screen shows a looping dynamic demo (adapted from the h723-mini ST7789
-demo) while the touch sensor stays active the whole time: a marker follows the
-finger, and the coordinates are printed on the USART1 console.
+The screen shows a looping dynamic demo while the touch sensor stays active the
+whole time: a marker follows the finger, and the coordinates are printed on the
+USART1 console.
 
 ## Display (MIPI DSI)
 
 * Interface: **MIPI DSI** host in **video (burst) mode**, 2 data lanes.
-* Panel: **OTM8009A**, 800x480 (landscape), RGB888, DSI video mode.
+* Panel: **OTM8009A**, **800x480** (landscape), RGB888, DSI video mode — the
+  **full 480 lines** are driven (LTDC/DSI active height = 480). Some ST docs
+  (UM2033) call this panel "800 x 472"; we do not use that reduced height.
 * Framebuffer: on-board 16 MB SDRAM at `0xC0000000` (write-through cacheable
   so the LTDC, a separate bus master, sees CPU writes).
 * Graphics: LTDC + DMA2D + the vendor fonts.

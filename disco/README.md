@@ -49,6 +49,30 @@ Copied verbatim from the vendor 216 MHz template (the STM32Cube_FW_F7 package).
 Each project folder contains its own README with build/flash instructions and
 the measured benchmark results.
 
+### External QSPI boot (`app_qspi/` + `tool/`)
+
+The board can also boot firmware from the MX25L51245G at `0x90000000`:
+
+| Path | What it is |
+| ---- | ---------- |
+| `tool/disco_boot` | bootloader in internal flash: inits QUADSPI, checks `0x90000000`, jumps |
+| `app_qspi/blink_hello_qspi` | same app as `blink_hello` (LEDs + ADC) booted from QSPI |
+| `app_qspi/dhry_216m_qspi` | Dhrystone 2.1 benchmark from QSPI (2.723 DMIPS/MHz — matches internal) |
+| `app_qspi/coremark_216m_qspi` | CoreMark 1.0 from QSPI (909.16, validated) |
+| `app_qspi/lcd_touch_test_qspi` | MIPI DSI LCD demo + touch from QSPI |
+| `tool/qspi_map/algo` | probe-rs QUADSPI flash algorithm for the MX25L51245G |
+| `tool/probers_alg` | bring-up harness that runs the algorithm's register code with a UART trace |
+
+One-time setup per board: flash `tool/disco_boot` to internal flash, then any
+`app_qspi/*` project's `ninja flash` programs the MX25L51245G via the algorithm
+and resets the board to boot the app. Verified on hardware (boot chain in
+`tool/disco_boot/README.md`).
+
+> `qspi_flash_test` and `sdram_test` are **not** ported to QSPI: a flash
+> benchmark would erase/program the very flash the app executes from (breaking
+> the memory-mapped mapping), and `sdram_test` is kept only in internal flash
+> for later use.
+
 ## Build & flash
 
 Each project has `build.sh` (GNU arm-none-eabi-gcc, the default) and supports

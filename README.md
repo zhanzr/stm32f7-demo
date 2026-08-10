@@ -25,11 +25,16 @@ are in `disco/README.md`.
 ## Projects
 
 * `blink_hello` — 3-LED blink + UART console, also measures the on-chip ADC
-  internal channels (die temperature / VREFINT / battery voltage).
+  internal channels (die temperature / VREFINT / battery voltage); prints the
+  current frequency + ADC values each second.
 * `dhry_216m` — Dhrystone 2.1 benchmark @ 216 MHz.
 * `coremark_216m` — CoreMark 1.0 benchmark @ 216 MHz.
 * `qspi_flash_test` — MX25L51245G QSPI flash erase/program/read benchmark.
 * `sdram_test` — on-board SDRAM write/read/memcpy benchmark.
 * `lcd_touch_test` — MIPI DSI LCD (OTM8009A 800x480) + FT6206 touch demo.
+
+`disco/app_qspi/` holds the QSPI-boot versions (`blink_hello_qspi`,
+`dhry_216m_qspi`, `coremark_216m_qspi`, `lcd_touch_test_qspi`) that run from the
+MX25L51245G at `0x90000000`, booted by `disco/tool/disco_boot`.
 
 Measured benchmark scores are in each project's `README.md`.
