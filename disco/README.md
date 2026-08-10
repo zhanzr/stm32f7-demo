@@ -42,6 +42,9 @@ Copied verbatim from the vendor 216 MHz template (the STM32Cube_FW_F7 package).
 | `blink_hello`    | 3-LED blink + UART freq print + ADC internal channels |
 | `dhry_216m`      | Dhrystone 2.1 benchmark @ 216 MHz              |
 | `coremark_216m`  | CoreMark 1.0 @ 216 MHz                         |
+| `qspi_flash_test`| MX25L51245G QSPI flash erase/program/read benchmark |
+| `sdram_test`     | on-board SDRAM write/read/memcpy benchmark     |
+| `lcd_touch_test` | MIPI DSI LCD (OTM8009A) + FT6206 touch demo    |
 
 Each project folder contains its own README with build/flash instructions and
 the measured benchmark results.

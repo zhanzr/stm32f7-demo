@@ -35,13 +35,19 @@
   */
 #define HAL_MODULE_ENABLED
 #define HAL_ADC_MODULE_ENABLED
+#define HAL_DMA2D_MODULE_ENABLED
+#define HAL_DSI_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
 #define HAL_DMA_MODULE_ENABLED
 #define HAL_EXTI_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
+#define HAL_I2C_MODULE_ENABLED
+#define HAL_LTDC_MODULE_ENABLED
 #define HAL_PWR_MODULE_ENABLED
+#define HAL_QSPI_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
 #define HAL_CORTEX_MODULE_ENABLED
+#define HAL_SDRAM_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
 
 /* ########################## HSE/HSI Values adaptation ##################### */
@@ -178,6 +184,30 @@
 #ifdef HAL_ADC_MODULE_ENABLED
   #include "stm32f7xx_hal_adc.h"
 #endif /* HAL_ADC_MODULE_ENABLED */
+
+#ifdef HAL_DMA2D_MODULE_ENABLED
+  #include "stm32f7xx_hal_dma2d.h"
+#endif /* HAL_DMA2D_MODULE_ENABLED */
+
+#ifdef HAL_DSI_MODULE_ENABLED
+  #include "stm32f7xx_hal_dsi.h"
+#endif /* HAL_DSI_MODULE_ENABLED */
+
+#ifdef HAL_I2C_MODULE_ENABLED
+  #include "stm32f7xx_hal_i2c.h"
+#endif /* HAL_I2C_MODULE_ENABLED */
+
+#ifdef HAL_LTDC_MODULE_ENABLED
+  #include "stm32f7xx_hal_ltdc.h"
+#endif /* HAL_LTDC_MODULE_ENABLED */
+
+#ifdef HAL_QSPI_MODULE_ENABLED
+  #include "stm32f7xx_hal_qspi.h"
+#endif /* HAL_QSPI_MODULE_ENABLED */
+
+#ifdef HAL_SDRAM_MODULE_ENABLED
+  #include "stm32f7xx_hal_sdram.h"
+#endif /* HAL_SDRAM_MODULE_ENABLED */
 
 #ifdef HAL_CORTEX_MODULE_ENABLED
   #include "stm32f7xx_hal_cortex.h"

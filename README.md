@@ -28,5 +28,8 @@ are in `disco/README.md`.
   internal channels (die temperature / VREFINT / battery voltage).
 * `dhry_216m` — Dhrystone 2.1 benchmark @ 216 MHz.
 * `coremark_216m` — CoreMark 1.0 benchmark @ 216 MHz.
+* `qspi_flash_test` — MX25L51245G QSPI flash erase/program/read benchmark.
+* `sdram_test` — on-board SDRAM write/read/memcpy benchmark.
+* `lcd_touch_test` — MIPI DSI LCD (OTM8009A 800x480) + FT6206 touch demo.
 
 Measured benchmark scores are in each project's `README.md`.
