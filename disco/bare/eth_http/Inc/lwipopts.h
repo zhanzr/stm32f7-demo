@@ -42,9 +42,6 @@
 a lot of data that needs to be copied, this should be set high. */
 #define MEM_SIZE                (16*1024)
 
-/* Relocate the LwIP RAM heap pointer */
-#define LWIP_RAM_HEAP_POINTER    (0x20078000)
-
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this
    should be set high. */
@@ -187,24 +184,6 @@ The STM32F7xxallows computing and verifying the IP, UDP, TCP and ICMP checksums 
  * LWIP_SOCKET==1: Enable Socket API (require to use sockets.c)
  */
 #define LWIP_SOCKET                     0
-
-/*
-   ------------------------------------
-   ---------- httpd options ----------
-   ------------------------------------
-*/
-
-/** Set this to 1 to support CGI */
-#define LWIP_HTTPD_CGI            1
-
-/** Set this to 1 to support SSI (Server-Side-Includes) */
-#define LWIP_HTTPD_SSI            1
-#define LWIP_HTTPD_SSI_INCLUDE_TAG 0   /* replace tags, don't leave <!--#t--> */
-
-/** Set this to 1 to include "fsdata_custom.c" instead of "fsdata.c" for the
- * file system (to prevent changing the file included in CVS) */
-#define HTTPD_USE_CUSTOM_FSDATA   1
-
 
 #endif /* __LWIPOPTS_H__ */
 

@@ -150,9 +150,12 @@ async function sampleAdc() {
   }
   if (!v) return;
   lastAdc = v;
+  /* VBAT is in volts (`vbat_v`); tolerate an old `vbat_mv` (millivolts). */
+  const vbat = (v.vbat_v !== undefined) ? v.vbat_v
+             : (v.vbat_mv !== undefined) ? v.vbat_mv / 1000 : undefined;
   pushSample('vrefint', v.vrefint_mv);
   pushSample('temp', v.temp_c);
-  pushSample('vbat', v.vbat_mv);
+  pushSample('vbat', vbat);
   redrawAll();
 }
 
@@ -203,11 +206,12 @@ function drawPlot(p) {
     ctx.stroke();
   }
 
-  /* latest value */
+  /* latest value - centered horizontally so it never overlaps the gray
+   * min/max axis labels drawn on the left */
   if (n > 0) {
     ctx.fillStyle = '#cfe3ff';
-    ctx.textAlign = 'left';
-    ctx.fillText(buf[n - 1].toFixed(p.dec) + ' ' + p.label, padL, h - 3);
+    ctx.textAlign = 'center';
+    ctx.fillText(buf[n - 1].toFixed(p.dec) + ' ' + p.label, w / 2, h - 3);
   }
 }
 

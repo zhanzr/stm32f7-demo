@@ -10,6 +10,9 @@ if [ -d /mingw64/bin ] && ! command -v cmake >/dev/null 2>&1; then
     export PATH="/mingw64/bin:/usr/bin:$PATH"
 fi
 
+# Regenerate the bundled site (web/ + public/ -> Inc/web_assets.h).
+python build_web.py
+
 mkdir -p build
 cd build
 cmake -G Ninja "$@" ..

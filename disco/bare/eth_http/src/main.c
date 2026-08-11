@@ -17,7 +17,7 @@
 #include "netif/etharp.h"
 #include "ethernetif.h"
 #include "app_ethernet.h"
-#include "http_cgi_ssi.h"
+#include "http_server.h"
 #include "lcd_display.h"
 
 /* Global network interface */

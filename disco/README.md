@@ -114,7 +114,7 @@ initialized globals in DTCM, zero-init globals in the AXI SRAM, and has up to
 | `qspi_flash_test`| MX25L51245G QSPI flash erase/program/read benchmark |
 | `sdram_test`     | on-board SDRAM write/read/memcpy benchmark     |
 | `lcd_touch_test` | MIPI DSI LCD (OTM8009A) + FT6206 touch demo    |
-| `eth_http`       | HTTP server (lwIP raw API + DHCP), network status on the LCD |
+| `eth_http`       | HTTP server (custom lwIP raw-TCP), serves the bundled single-page site (LED/ADC/info JSON API) + network status on the LCD |
 
 Each project folder contains its own README with build/flash instructions and
 the measured benchmark results.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bundle the e_server web frontend into C arrays for the (embedded) backend.
+"""Bundle the eth_http web frontend into C arrays for the embedded backend.
 
 Pipeline (one command, no runtime deps beyond Python):
 
@@ -18,7 +18,7 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(HERE, "web")
 PUBLIC = os.path.join(HERE, "public")
-OUT = os.path.join(HERE, "web_assets.h")
+OUT = os.path.join(HERE, "Inc", "web_assets.h")
 
 CTYPES = {
     ".jpg": "image/jpeg",

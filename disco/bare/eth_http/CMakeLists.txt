@@ -36,7 +36,7 @@ add_executable(${PROJECT_NAME}.elf
     src/main.c
     src/ethernetif.c
     src/app_ethernet.c
-    src/httpd_cgi_ssi.c
+    src/http_server.c
     src/lcd_display.c
 
     # on-board LCD: MIPI DSI + LTDC + DMA2D, SDRAM framebuffer, fonts
@@ -46,9 +46,8 @@ add_executable(${PROJECT_NAME}.elf
     ${COMPONENTS}/otm8009a/otm8009a.c
     ${COMPONENTS}/nt35510/nt35510.c
 
-    # lwIP (NO_SYS raw API + httpd)
-    ${LWIP}/apps/http/httpd.c
-    ${LWIP}/apps/http/fs.c
+    # lwIP (NO_SYS raw API; the HTTP server is a custom raw-TCP app,
+    # src/http_server.c, serving the bundled web_assets.h site)
     ${LWIP}/core/def.c
     ${LWIP}/core/dns.c
     ${LWIP}/core/inet_chksum.c
@@ -100,7 +99,6 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${LWIP}/include
     ${LWIP}/include/netif
-    ${LWIP}/apps/http
     ${LWIP}/system
     ${COMPONENTS}
     ${BSP_DIR}
