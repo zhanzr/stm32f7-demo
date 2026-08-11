@@ -119,6 +119,17 @@ initialized globals in DTCM, zero-init globals in the AXI SRAM, and has up to
 Each project folder contains its own README with build/flash instructions and
 the measured benchmark results.
 
+### `e_server` (standalone web app + reference backend)
+
+The `e_server/` folder at the repo root is the **standalone source of truth
+for the web site** served by `eth_http` (and reusable by any other
+board/project): the three-tab page (`web/`), the board photos (`public/`),
+the C-array packer (`build_web.py`, supports `--out`), and a host-side
+reference C backend (`server.c`) that demonstrates the `/api` contract.
+`eth_http`'s build runs `e_server/build_web.py --out Inc/web_assets.h`, so
+editing `e_server/web` + `e_server/public` is all that's needed to change the
+served site.
+
 ### External QSPI boot (`app_qspi/` + `tool/`)
 
 The board can also boot firmware from the MX25L51245G at `0x90000000`:

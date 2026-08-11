@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Bundle the eth_http web frontend into C arrays for the embedded backend.
+"""Bundle the e_server web frontend into C arrays for embedded backends.
+
+Standalone site packer: web/ (index.html + style.css + app.js) and public/
+(images) become a gzip page + raw byte arrays in a generated header. Reusable
+by any project - pass --out to emit into another tree:
+
+    python build_web.py                          # -> ./web_assets.h
+    python build_web.py --out <proj>/Inc/web_assets.h
 
 Pipeline (one command, no runtime deps beyond Python):
 
@@ -12,13 +19,11 @@ Pipeline (one command, no runtime deps beyond Python):
 
 Output: web_assets.h  (const uint8_t arrays + embedded_files[] table + lengths).
 """
+import argparse
 import gzip
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-WEB = os.path.join(HERE, "web")
-PUBLIC = os.path.join(HERE, "public")
-OUT = os.path.join(HERE, "Inc", "web_assets.h")
 
 CTYPES = {
     ".jpg": "image/jpeg",
@@ -42,6 +47,19 @@ def var_name(path):
 
 
 def main():
+    ap = argparse.ArgumentParser(description="Pack web/ + public/ into a C header.")
+    ap.add_argument("--out", default=os.path.join(HERE, "web_assets.h"),
+                    help="output header path (default: ./web_assets.h)")
+    ap.add_argument("--web", default=os.path.join(HERE, "web"),
+                    help="directory of index.html/style.css/app.js (default: ./web)")
+    ap.add_argument("--public", default=os.path.join(HERE, "public"),
+                    help="directory of images to embed (default: ./public)")
+    args = ap.parse_args()
+
+    WEB = args.web
+    PUBLIC = args.public
+    OUT = args.out
+
     html = open(os.path.join(WEB, "index.html"), encoding="utf-8").read()
     css = open(os.path.join(WEB, "style.css"), encoding="utf-8").read()
     js = open(os.path.join(WEB, "app.js"), encoding="utf-8").read()

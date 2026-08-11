@@ -10,8 +10,9 @@ if [ -d /mingw64/bin ] && ! command -v cmake >/dev/null 2>&1; then
     export PATH="/mingw64/bin:/usr/bin:$PATH"
 fi
 
-# Regenerate the bundled site (web/ + public/ -> Inc/web_assets.h).
-python build_web.py
+# Regenerate the bundled site from the standalone e_server/ sources
+# (e_server/web + e_server/public -> Inc/web_assets.h).
+python "$SCRIPT_DIR/../../../e_server/build_web.py" --out "$SCRIPT_DIR/Inc/web_assets.h"
 
 mkdir -p build
 cd build
