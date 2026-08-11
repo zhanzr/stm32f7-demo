@@ -40,6 +40,7 @@
 #define HAL_GPIO_MODULE_ENABLED
 #define HAL_DMA_MODULE_ENABLED
 #define HAL_EXTI_MODULE_ENABLED
+#define HAL_ETH_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_I2C_MODULE_ENABLED
 #define HAL_LTDC_MODULE_ENABLED
@@ -224,6 +225,14 @@
 #ifdef HAL_UART_MODULE_ENABLED
   #include "stm32f7xx_hal_uart.h"
 #endif /* HAL_UART_MODULE_ENABLED */
+
+#ifdef HAL_ETH_MODULE_ENABLED
+  #include "stm32f7xx_hal_eth.h"
+#endif /* HAL_ETH_MODULE_ENABLED */
+
+/* Ethernet PHY (LAN8742) MDIO access timeouts. */
+#define PHY_READ_TO    0x0000FFFFU
+#define PHY_WRITE_TO   0x0000FFFFU
 
 /* Exported macro ------------------------------------------------------------*/
 #ifdef  USE_FULL_ASSERT

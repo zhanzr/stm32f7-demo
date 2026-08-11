@@ -2,21 +2,26 @@
  *
  * Memory map (F769NI):
  *   FLASH      :   2 MB @ 0x08000000   (execution)
- *   DTCM       : 128 KB @ 0x20000000   (stack + RW/ZI, core-private)
- *   AXI SRAM1-3: 400 KB @ 0x20020000   (RESERVED - not used by the projects)
+ *   DTCM       : 128 KB @ 0x20000000   (stack + .data, core-private, fast)
+ *   AXI SRAM   : 384 KB @ 0x20020000   (.bss - large uninitialized data)
  *   SDRAM      :  16 MB @ 0xC0000000   (on-board FMC SDRAM - heap + `.sdram`)
  *
- * The SDRAM is divided into two linker-managed regions (no raw addresses):
- *   `.sdram`   - opt-in zero-init buffers (cleared by board.c's SDRAM_Init):
- *                uint8_t buf[4096] __attribute__((section(".sdram")));
- *   `._user_heap` - the malloc() heap, placed AFTER `.sdram` and capped at
- *                the SDRAM top (16 MB @ 0xC0000000 -> 0xC1000000) by syscalls.c.
+ * Split rationale:
+ *   - The stack and `.data` stay in the fast core-private DTCM (zero-wait).
+ *   - `.bss` (uninitialized globals, usually the largest static chunk) uses
+ *     the dedicated AXI SRAM, which is always available (no init needed) and
+ *     otherwise sits idle.
+ *   - The SDRAM carries the opt-in `.sdram` buffers and the malloc() heap
+ *     (two-region heap: a small `.dcm_heap` DTCM reserve serves newlib's
+ *     pre-main allocations, then _sbrk switches to the SDRAM).
+ *     `.sdram` is zeroed by board.c's SDRAM_Init:
+ *       uint8_t buf[4096] __attribute__((section(".sdram")));
+ *     `._user_heap` is placed AFTER `.sdram`, capped at 0xC1000000.
  *
- * The SDRAM is brought up by SystemInit() at 216 MHz BEFORE the startup .data
- * copy and __libc_init_array (which calls _sbrk/malloc a few times), so the
- * heap works from the very first allocation. .data/.bss/stack stay in DTCM:
- * the Cortex-M7 loads the initial SP from the vector table before SystemInit
- * runs, and the bootstrap .data copy must not touch the external SDRAM.
+ * The SDRAM is brought up by SystemInit() BEFORE the startup .data copy and
+ * __libc_init_array (which calls _sbrk/malloc a few times), so the heap works
+ * from the first allocation. The bootstrap .data copy and .bss zero only touch
+ * the on-chip DTCM/AXI SRAM, never the external SDRAM.
  *
  * Symbols consumed by startup_stm32f769xx.s:
  *   _estack, _sidata, _sdata, _edata, _sbss, _ebss
@@ -30,6 +35,7 @@ MEMORY
 {
   FLASH (rx)   : ORIGIN = 0x08000000, LENGTH = 2M
   DTCM (xrw)   : ORIGIN = 0x20000000, LENGTH = 128K
+  AXI_SRAM (xrw): ORIGIN = 0x20020000, LENGTH = 384K   /* .bss */
   SDRAM (rwx)  : ORIGIN = 0xC0000000, LENGTH = 16M
 }
 
@@ -130,7 +136,7 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;
     __bss_end__ = _ebss;
-  } >DTCM
+  } >AXI_SRAM
 
   /* Small on-chip heap RESERVE: newlib calls _sbrk()/malloc() a few times
    * during __libc_init_array (before main), when accesses to the external

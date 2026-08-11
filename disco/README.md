@@ -57,10 +57,16 @@ LTDC/DMA).
 
 Design notes:
 
-* **Stack + `.data`/`.bss` stay in internal SRAM (DTCM).** The Cortex-M7 loads
-  the initial SP from the vector table *before* `SystemInit()` runs, and the
+* **Stack + `.data` stay in internal SRAM (DTCM).** The Cortex-M7 loads the
+  initial SP from the vector table *before* `SystemInit()` runs, and the
   startup `.data` copy must not touch the external SDRAM: on this board, SDRAM
   writes fault (imprecise bus error) during the pre-main bootstrap.
+* **`.bss` lives in the AXI SRAM (384 KB @ `0x20020000`), not DTCM.** The
+  core-private DTCM is tight (128 KB), and the AXI SRAM is DMA-reachable (the
+  Ethernet DMA, LTDC etc. can reach it, unlike DTCM). Both are internal RAM
+  with no power-on init needed, so the startup's `.bss` zero-fill works as-is.
+  Because the D-cache covers the AXI SRAM, benchmarks are unaffected
+  (Dhrystone ~1.44 DMIPS/MHz, CoreMark ~932).
 * **The heap needs a tiny DTCM reserve.** newlib calls `_sbrk()`/`malloc()` a
   few times during its own C-runtime init (`__libc_init_array`, before `main()`)
   - at a point where SDRAM accesses still fault. `_sbrk` therefore serves those
@@ -68,21 +74,26 @@ Design notes:
   switches to the SDRAM heap after `Board_Init()` has brought the SDRAM up
   (`Board_SdramReady()`).
 * Because the malloc'd working set lives in the SDRAM, benchmarks that hammer
-  malloc'd records slow down accordingly (e.g. Dhrystone ~1.37 vs ~2.72
+  malloc'd records slow down accordingly (e.g. Dhrystone ~1.44 vs ~2.72
   DMIPS/MHz with a DTCM heap); CoreMark is essentially unaffected.
 
 ## Memory plan
 
-How the three memory regions are used (linker: `stm32f769ni.ld`):
+How the memory regions are used (linkers: `stm32f769ni.ld` for bare projects,
+`app.ld` for QSPI apps - identical layout):
 
 * **FLASH (2 MB @ `0x08000000`)** - code + read-only data + `.data`
   initializers. Each project's firmware is a few tens of KB (a couple of
   percent of the 2 MB). QSPI-boot apps instead link at `0x90000000` into the
   8 MB MX25L51245G.
 * **DTCM (128 KB @ `0x20000000`)** - the **stack** (top-down from
-  `0x20020000`) plus `.data`/`.bss` and an **8 KB `.dcm_heap` reserve** that
-  serves newlib's pre-`main` `malloc()` calls. `.data`/`.bss`/stack stay here
-  because the bootstrap must not touch the external SDRAM.
+  `0x20020000`) plus `.data` and an **8 KB `.dcm_heap` reserve** that serves
+  newlib's pre-`main` `malloc()` calls. `.data`/stack stay here because the
+  bootstrap must not touch the external SDRAM.
+* **AXI SRAM (384 KB @ `0x20020000`)** - the **`.bss`** section (zero-init
+  statics), right above the DTCM stack. Internal RAM, so the startup zero-fill
+  just works; and DMA-reachable, so e.g. the Ethernet DMA can touch `.bss`
+  buffers directly.
 * **SDRAM (16 MB @ `0xC0000000`)** - the big RAM pool, split into two
   linker-managed regions:
   * `.sdram` - opt-in fixed buffers (the LCD framebuffer, `sdram_test`'s
@@ -92,8 +103,8 @@ How the three memory regions are used (linker: `stm32f769ni.ld`):
     the physical SDRAM top (`0xC1000000`).
 
 So a typical app keeps a small code footprint in FLASH, runs with its stack and
-statics in DTCM, and has up to ~16 MB of SDRAM available for `malloc()` and
-opt-in large buffers.
+initialized globals in DTCM, zero-init globals in the AXI SRAM, and has up to
+~16 MB of SDRAM available for `malloc()` and opt-in large buffers.
 
 ## Projects
 
@@ -105,6 +116,7 @@ opt-in large buffers.
 | `qspi_flash_test`| MX25L51245G QSPI flash erase/program/read benchmark |
 | `sdram_test`     | on-board SDRAM write/read/memcpy benchmark     |
 | `lcd_touch_test` | MIPI DSI LCD (OTM8009A) + FT6206 touch demo    |
+| `eth_http`       | HTTP server (lwIP raw API + DHCP), network status on the LCD |
 
 Each project folder contains its own README with build/flash instructions and
 the measured benchmark results.

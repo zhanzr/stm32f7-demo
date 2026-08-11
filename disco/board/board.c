@@ -119,7 +119,13 @@ static void SDRAM_Init(void)
 /* ------------------------------------------------------------------------ */
 /* Clock tree as in the vendor 216 MHz template (HSE 25 MHz -> PLL M=25 N=432
  * P=2 -> SYSCLK 216 MHz, HCLK 216 MHz, APB1 54 MHz, APB2 108 MHz,
- * OverDrive on, VOS scale 1, flash latency 7). */
+ * OverDrive on, VOS scale 1, flash latency 7).
+ * A project may override the core frequency by defining BOARD_PLL_N (e.g.
+ * eth_http uses 400 -> 200 MHz because the board's RMII Ethernet only works
+ * reliably at 200 MHz on this board). */
+#ifndef BOARD_PLL_N
+#define BOARD_PLL_N   432
+#endif
 #ifdef QSPI_APP
 /* QSPI apps: the bootloader owns the clock tree, so an empty
  * SystemClock_Config keeps the (identical) app main() callable without
@@ -142,7 +148,7 @@ void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
     RCC_OscInitStruct.PLL.PLLM       = 25;
-    RCC_OscInitStruct.PLL.PLLN       = 432;
+    RCC_OscInitStruct.PLL.PLLN       = BOARD_PLL_N;
     RCC_OscInitStruct.PLL.PLLP       = RCC_PLLP_DIV2;
     RCC_OscInitStruct.PLL.PLLQ       = 9;
     RCC_OscInitStruct.PLL.PLLR       = 7;

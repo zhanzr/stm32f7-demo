@@ -3,15 +3,16 @@
  *
  * Memory map:
  *   QSPI (rx) : 8 MB @ 0x90000000   (vector table + code + rodata + .data LMA)
- *   DTCM (xrw): 128 KB @ 0x20000000 (stack + RW/ZI + .dcm_heap reserve)
+ *   DTCM (xrw): 128 KB @ 0x20000000 (stack + .data + .dcm_heap reserve)
+ *   AXI SRAM (xrw): 384 KB @ 0x20020000 (.bss)
  *   SDRAM (rwx): 16 MB @ 0xC0000000 (heap + opt-in .sdram buffers)
  *
  * The bootloader puts the QUADSPI in memory-mapped mode and jumps to the reset
- * vector at 0x90000000. .data/.bss/stack stay in the on-chip DTCM; the SDRAM
- * carries the `.sdram` buffers and the malloc() heap (newlib's pre-main
- * allocations use the small .dcm_heap DTCM reserve first - see syscalls.c).
- * This app deliberately does NOT own the RCC/PLL2 clocks (the bootloader
- * does) - see system_app.c.
+ * vector at 0x90000000. .data/stack stay in the on-chip DTCM, .bss in the AXI
+ * SRAM; the SDRAM carries the `.sdram` buffers and the malloc() heap (newlib's
+ * pre-main allocations use the small .dcm_heap DTCM reserve first - see
+ * syscalls.c). This app deliberately does NOT own the RCC/PLL2 clocks (the
+ * bootloader does) - see system_app.c.
  */
 
 ENTRY(Reset_Handler)
@@ -20,6 +21,7 @@ MEMORY
 {
   QSPI (rx)  : ORIGIN = 0x90000000, LENGTH = 8M
   DTCM (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
+  AXI_SRAM (xrw): ORIGIN = 0x20020000, LENGTH = 384K   /* .bss */
   SDRAM (rwx): ORIGIN = 0xC0000000, LENGTH = 16M
 }
 
@@ -120,7 +122,7 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;
     __bss_end__ = _ebss;
-  } >DTCM
+  } >AXI_SRAM
 
   /* Small on-chip heap RESERVE for newlib's pre-main _sbrk() calls (they
    * happen before the SDRAM is usable - see syscalls.c / stm32f769ni.ld). */

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>LED control</title></head>
+<body>
+<h1>STM32F769I-Discovery LED control</h1>
+<p>Check the on-board LEDs you want ON and press Send. Unchecking a box and
+sending turns that LED off.</p>
+<form method="GET" action="/leds.cgi">
+  <p>
+    <label><input type="checkbox" name="led" value="1"<!--#led1-->> LD1 (green, PJ13)</label><br>
+    <label><input type="checkbox" name="led" value="2"<!--#led2-->> LD2 (red, PJ5)</label><br>
+    <label><input type="checkbox" name="led" value="3"<!--#led3-->> LD3 (green, PA12)</label><br>
+  </p>
+  <p><input type="submit" value="Send"></p>
+</form>
+<p><a href="/">Home</a></p>
+</body>
+</html>
