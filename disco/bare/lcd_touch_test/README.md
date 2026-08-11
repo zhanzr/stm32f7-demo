@@ -15,8 +15,11 @@ USART1 console.
 * Panel: **OTM8009A**, **800x480** (landscape), RGB888, DSI video mode — the
   **full 480 lines** are driven (LTDC/DSI active height = 480). Some ST docs
   (UM2033) call this panel "800 x 472"; we do not use that reduced height.
-* Framebuffer: on-board 16 MB SDRAM at `0xC0000000` (write-through cacheable
-  so the LTDC, a separate bus master, sees CPU writes).
+* Framebuffer: a `uint32_t` array in the on-board **16 MB SDRAM** (the shared
+  `.sdram` linker section), passed to `BSP_LCD_LayerDefaultInit()` — write-through
+  cacheable so the LTDC, a separate bus master, sees CPU writes. No hardcoded
+  `0xC0000000` address, so the framebuffer cannot collide with anything else in
+  the SDRAM.
 * Graphics: LTDC + DMA2D + the vendor fonts.
 
 ## Demo phases (loop forever)

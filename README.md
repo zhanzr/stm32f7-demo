@@ -5,15 +5,15 @@ Bare-metal firmware projects for the **STM32F769I-Discovery** board
 GNU arm-none-eabi-gcc (Keil AC6/armclang optional).
 
 The whole board project lives in the **`disco/`** folder — it holds the shared
-board layer (`board/`, `cmake/`, `drivers/`) plus the applications under
-`disco/app/`. Each application has its own `build.sh`, `CMakeLists.txt`,
+board layer (`board/`, `cmake/`, `drivers/`) plus the bare-metal applications
+under `disco/bare/`. Each application has its own `build.sh`, `CMakeLists.txt`,
 `src/` and a `README.md` with the project-specific build/flash/measure
 instructions and its measured benchmark results.
 
 ## Build & flash
 
 ```bash
-cd disco/app/<project>
+cd disco/bare/<project>
 bash build.sh                # == cmake -G Ninja .. && ninja  (GCC, default)
 ninja flash                  # probe-rs --chip STM32F769NI via on-board ST-Link V2
 ```

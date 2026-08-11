@@ -1,6 +1,6 @@
-# dhry_216m_qspi — Dhrystone 2.1 @ 216 MHz from the MX25L51245G
+﻿# dhry_216m_qspi 鈥?Dhrystone 2.1 @ 216 MHz from the MX25L51245G
 
-Same as `app/dhry_216m` but linked for and booted from the on-board
+Same as `bare/dhry_216m` but linked for and booted from the on-board
 **MX25L51245G** at the QUADSPI memory-mapped base `0x90000000` (requires
 `disco_boot` in internal flash).
 
@@ -8,11 +8,13 @@ Same as `app/dhry_216m` but linked for and booted from the on-board
 
 | Location | Dhrystones/s | DMIPS/MHz |
 | -------- | ------------ | --------- |
-| internal flash (`app/dhry_216m`) | 1,033,325 | 2.723 |
-| **MX25L51245G (`app_qspi/dhry_216m_qspi`)** | **1,033,325** | **2.723** |
+| internal flash (`bare/dhry_216m`) | 519,998 | 1.370 |
+| **MX25L51245G (`app_qspi/dhry_216m_qspi`)** | **547,021** | **1.441** |
 
-Identical to the internal-flash run — Dhrystone's code is small and
-cache-resident, so the QSPI fetch path doesn't slow it down.
+The malloc'd Dhrystone records live in the on-board **SDRAM** (two-region
+heap, write-through cacheable), which is why the scores are ~half a DTCM-heap
+build; the QSPI code-fetch path itself adds little (identical build as
+`bare/dhry_216m`).
 
 ## Build & flash
 

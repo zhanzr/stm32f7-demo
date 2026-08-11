@@ -1,6 +1,6 @@
-# blink_hello_qspi — STM32F769NI (STM32F769I-Discovery) from the MX25L51245G @ 0x90000000
+﻿# blink_hello_qspi 鈥?STM32F769NI (STM32F769I-Discovery) from the MX25L51245G @ 0x90000000
 
-Same as `app/blink_hello` (LD1/LD2/LD3 high-active LEDs + the ADC internal
+Same as `bare/blink_hello` (LD1/LD2/LD3 high-active LEDs + the ADC internal
 channels: die temp / VREFINT / VBAT), but linked for and booted from the
 on-board **MX25L51245G** (64 MB) at the QUADSPI memory-mapped base
 `0x90000000`. Requires `disco_boot` in internal flash.
@@ -26,7 +26,7 @@ board, so `disco_boot` boots the new app immediately.
 ## Notes
 
 * The app uses a **non-destructive** `system_app.c` (`SystemInit` leaves RCC and
-  the QUADSPI clock alone — the bootloader owns them).
+  the QUADSPI clock alone 鈥?the bootloader owns them).
 * `board.c`'s `SystemClock_Config()`/MPU become no-ops under `QSPI_APP` so the
   same `main()` calls `Board_Init()` without breaking the bootloader's clocks.
 * Verified on hardware: boots from the MX25L51245G at 216 MHz with correct ADC

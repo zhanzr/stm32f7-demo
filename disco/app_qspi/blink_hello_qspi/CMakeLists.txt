@@ -1,5 +1,5 @@
-# blink_hello_qspi: minimal STM32F769NI (STM32F769I-Discovery) QSPI app
-# @ 216 MHz. Same as app/blink_hello (LD1/2/3 + USART1 console) but linked for
+﻿# blink_hello_qspi: minimal STM32F769NI (STM32F769I-Discovery) QSPI app
+# @ 216 MHz. Same as bare/blink_hello (LD1/2/3 + USART1 console) but linked for
 # and booted from the MX25L51245G at 0x90000000 (QUADSPI memory-mapped), by
 # disco_boot in internal flash.
 #
@@ -48,7 +48,7 @@ stm32f769_apply_board(${PROJECT_NAME}.elf "-O2")
 # main() can call Board_Init() without breaking the bootloader's clocks/MPU.
 target_compile_definitions(${PROJECT_NAME}.elf PRIVATE QSPI_APP=1)
 
-# ADC (internal channels: die temp / VREFINT / VBAT) - same as app/blink_hello.
+# ADC (internal channels: die temp / VREFINT / VBAT) - same as bare/blink_hello.
 target_sources(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_adc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_adc_ex.c

@@ -13,7 +13,15 @@
 #define FPS_BAND     24
 #define ANIM_H       (SCREEN_H - FPS_BAND)
 #define BACK_COLOR   LCD_COLOR_BLACK
-#define FB_ADDR      (LCD_FB_START_ADDRESS)   /* 0xC0000000, ARGB8888 */
+
+/* The LTDC framebuffer is a plain global array in the on-board SDRAM (the
+ * `.sdram` linker section). No fixed address: .data/.bss/heap also live in the
+ * SDRAM, so a hardcoded base (0xC0000000) would collide with them. The app
+ * passes this array's address to the LTDC layer config. */
+#define FB_W         800
+#define FB_H         480
+static uint32_t framebuffer[FB_W * FB_H] __attribute__((section(".sdram")));
+#define FB_ADDR      ((uint32_t)(uintptr_t)framebuffer)
 
 /* On-board LEDs (LD1 PJ13, LD2 PJ5, LD3 PA12), high active. */
 #define LD1_PORT GPIOJ
@@ -24,34 +32,9 @@
 #define LD3_PIN  GPIO_PIN_12
 
 /* ------------------------------------------------------------------------ */
-/* The shared board layer denies 0x60000000..0xDFFFFFFF (region 0). Add
- * higher-priority regions for the FMC controller (0xA0000000, device) and the
- * FMC SDRAM / LCD framebuffer (0xC0000000, write-through cacheable - CPU
- * stores land straight in the SDRAM so the LTDC sees them). */
-static void Periph_MPU_Enable(void)
-{
-    MPU_Region_InitTypeDef r = {0};
-
-    r.Enable           = MPU_REGION_ENABLE;
-    r.Number           = MPU_REGION_NUMBER2;
-    r.BaseAddress      = 0xA0000000;
-    r.Size             = MPU_REGION_SIZE_8KB;
-    r.SubRegionDisable = 0x00;
-    r.TypeExtField     = MPU_TEX_LEVEL0;
-    r.AccessPermission = MPU_REGION_FULL_ACCESS;
-    r.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
-    r.IsShareable      = MPU_ACCESS_SHAREABLE;
-    r.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
-    r.IsBufferable     = MPU_ACCESS_BUFFERABLE;
-    HAL_MPU_ConfigRegion(&r);
-
-    r.Number           = MPU_REGION_NUMBER1;
-    r.BaseAddress      = 0xC0000000;
-    r.Size             = MPU_REGION_SIZE_32MB;
-    r.IsCacheable      = MPU_ACCESS_CACHEABLE;   /* C=1, B=0 -> write-through */
-    r.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
-    HAL_MPU_ConfigRegion(&r);
-}
+/* The shared board layer opens the FMC + SDRAM (write-through cacheable), so
+ * the LTDC (a separate bus master) sees CPU writes to the framebuffer without
+ * cache maintenance - no extra MPU config needed here. */
 
 /* ------------------------------------------------------------------------ */
 /* The LCD BSP enables the LTDC / DMA2D / DSI NVIC lines; give them real
@@ -388,8 +371,7 @@ static void led_test(void)
 int main(void)
 {
     HAL_Init();
-    Board_Init();
-    Periph_MPU_Enable();
+    Board_Init();   /* inits the on-board SDRAM (LCD framebuffer) too */
 
     printf("\r\n=== lcd_touch_test on STM32F769NI @ %lu Hz ===\r\n",
            (unsigned long)SystemCoreClock);
@@ -402,7 +384,7 @@ int main(void)
         {
         }
     }
-    BSP_LCD_LayerDefaultInit(0, LCD_FB_START_ADDRESS);
+    BSP_LCD_LayerDefaultInit(0, FB_ADDR);
     BSP_LCD_Clear(LCD_COLOR_BLACK);
     printf("LCD: %u x %u, MIPI DSI video mode (OTM8009A)\r\n",
            (unsigned)BSP_LCD_GetXSize(), (unsigned)BSP_LCD_GetYSize());

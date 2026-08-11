@@ -1,6 +1,6 @@
-# lcd_touch_test_qspi — MIPI DSI LCD demo + touch from the MX25L51245G
+﻿# lcd_touch_test_qspi 鈥?MIPI DSI LCD demo + touch from the MX25L51245G
 
-Same as `app/lcd_touch_test` (MIPI DSI LCD dynamic demo + FT6206 touch) but
+Same as `bare/lcd_touch_test` (MIPI DSI LCD dynamic demo + FT6206 touch) but
 linked for and booted from the on-board **MX25L51245G** at the QUADSPI
 memory-mapped base `0x90000000` (requires `disco_boot` in internal flash). The
 app code runs from QSPI while the LTDC/DSI drive the SDRAM framebuffer.

@@ -17,29 +17,9 @@
 static uint8_t tx_buf[CHUNK_SIZE];
 static uint8_t rx_buf[CHUNK_SIZE];
 
-/* ------------------------------------------------------------------------ */
-/* The shared board layer denies 0x60000000..0xDFFFFFFF (region 0), which
- * covers the QUADSPI peripheral at 0xA0001000. Add a higher-priority 8 KB
- * region at 0xA0000000 (device memory) - same as the vendor template's FMC
- * control-register region, which also spans the QUADSPI block. */
-static void QSPI_MPU_Enable(void)
-{
-    MPU_Region_InitTypeDef r = {0};
-
-    r.Enable           = MPU_REGION_ENABLE;
-    r.Number           = MPU_REGION_NUMBER2;
-    r.BaseAddress      = 0xA0000000;
-    r.Size             = MPU_REGION_SIZE_8KB;
-    r.SubRegionDisable = 0x00;
-    r.TypeExtField     = MPU_TEX_LEVEL0;
-    r.AccessPermission = MPU_REGION_FULL_ACCESS;
-    r.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
-    r.IsShareable      = MPU_ACCESS_SHAREABLE;
-    r.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
-    r.IsBufferable     = MPU_ACCESS_BUFFERABLE;   /* device memory */
-
-    HAL_MPU_ConfigRegion(&r);
-}
+/* The shared board layer opens the FMC/QUADSPI control region (0xA0000000,
+ * device memory) - which spans the QUADSPI peripheral at 0xA0001000 - so no
+ * extra MPU config is needed here. */
 
 /* Fill a chunk with a deterministic pattern derived from (addr, i). */
 static void fill_pattern(uint8_t *p, uint32_t size, uint32_t base_addr, uint32_t i)
@@ -128,7 +108,6 @@ int main(void)
 {
     HAL_Init();
     Board_Init();
-    QSPI_MPU_Enable();
 
     printf("\r\n=== qspi_flash_test on STM32F769NI @ %lu Hz ===\r\n",
            (unsigned long)SystemCoreClock);

@@ -3,44 +3,46 @@
 
 #include "board.h"
 #include "uart_printf.h"
-#include "stm32f769i_discovery_sdram.h"
 
-/* Benchmark region: 8 MB of the 16 MB SDRAM at 0xC0000000. */
-#define SDRAM_BASE       (SDRAM_DEVICE_ADDR)          /* 0xC0000000 */
+/* The test buffer is a plain global array in the on-board SDRAM (the `.sdram`
+ * linker section, which also holds the LCD framebuffer). Since .data/.bss/heap
+ * live in the SDRAM too, testing a hardcoded base (0xC0000000) would wipe the
+ * app's own state - the array is the non-destructive, linker-managed way. */
 #define TEST_SIZE        (8U * 1024U * 1024U)
 #define TEST_WORDS       (TEST_SIZE / 4U)
+static uint32_t test_buf[TEST_WORDS] __attribute__((section(".sdram")));
 
 /* ------------------------------------------------------------------------ */
-/* The shared board layer denies access to 0x60000000..0xDFFFFFFF (region 0).
- * Add higher-priority regions for the FMC controller (0xA0000000, device) and
- * the FMC SDRAM (0xC0000000). The SDRAM is mapped non-cacheable so the
- * benchmark measures real FMC/SDRAM bus traffic, not L1 cache hits. */
+/* The shared board layer opens the FMC + SDRAM (write-through cacheable).
+ * This benchmark re-maps the SDRAM NON-cacheable so it measures real
+ * FMC/SDRAM bus traffic, not L1 cache hits. Clean the D-cache first so the
+ * app's .data/.bss (also in the SDRAM) are flushed before the region stops
+ * being cached. */
 static void Periph_MPU_Enable(void)
 {
     MPU_Region_InitTypeDef r = {0};
 
-    /* FMC control registers @ 0xA0000000, 8 KB, device memory. */
+    /* Flush dirty SDRAM .data/.bss/array lines first, then re-map the SDRAM
+     * NON-cacheable so the benchmark measures real FMC/SDRAM bus traffic.
+     * The cache may hold valid lines for the `.sdram` array (Board_Init's
+     * SDRAM_Init zeroes it), so invalidate afterwards - otherwise reads could
+     * hit stale cached zeros. */
+    SCB_CleanDCache();
+
     r.Enable           = MPU_REGION_ENABLE;
-    r.Number           = MPU_REGION_NUMBER2;
-    r.BaseAddress      = 0xA0000000;
-    r.Size             = MPU_REGION_SIZE_8KB;
+    r.Number           = MPU_REGION_NUMBER1;
+    r.BaseAddress      = 0xC0000000;
+    r.Size             = MPU_REGION_SIZE_32MB;
     r.SubRegionDisable = 0x00;
     r.TypeExtField     = MPU_TEX_LEVEL0;
     r.AccessPermission = MPU_REGION_FULL_ACCESS;
-    r.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
-    r.IsShareable      = MPU_ACCESS_SHAREABLE;
-    r.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
-    r.IsBufferable     = MPU_ACCESS_BUFFERABLE;
-    HAL_MPU_ConfigRegion(&r);
-
-    /* SDRAM @ 0xC0000000, 32 MB, NON-cacheable normal memory (C=0, B=0) so
-     * the benchmark measures real FMC/SDRAM bus traffic, not L1 cache hits. */
-    r.Number           = MPU_REGION_NUMBER1;
-    r.BaseAddress      = SDRAM_BASE;
-    r.Size             = MPU_REGION_SIZE_32MB;
-    r.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
+    r.DisableExec      = MPU_INSTRUCTION_ACCESS_ENABLE;
+    r.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+    r.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;   /* C=0, B=0 */
     r.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
     HAL_MPU_ConfigRegion(&r);
+
+    SCB_InvalidateDCache();   /* drop stale lines for the now-uncached region */
 }
 
 /* ------------------------------------------------------------------------ */
@@ -55,33 +57,31 @@ static const char *verify_ok(uint32_t n) { return n ? "FAIL" : "OK"; }
 /* ------------------------------------------------------------------------ */
 int main(void)
 {
+    /* Progress markers for probe-rs debugging (bottom of DTCM, away from the
+     * stack which grows down from 0x20020000). */
+    volatile uint32_t *mark = (volatile uint32_t *)0x20000000;
+    mark[0] = 0xDEAD0001;
     HAL_Init();
+    mark[1] = 0xDEAD0002;
     Board_Init();
+    mark[2] = 0xDEAD0003;
     Periph_MPU_Enable();
+    mark[3] = 0xDEAD0004;
 
     printf("\r\n=== sdram_test on STM32F769NI @ %lu Hz ===\r\n",
            (unsigned long)SystemCoreClock);
 
-    if (BSP_SDRAM_Init() != SDRAM_OK)
-    {
-        printf("SDRAM: init FAILED\r\n");
-        while (1)
-        {
-        }
-    }
-    printf("SDRAM: init OK, %lu MB @ 0x%08lX, testing %lu MB\r\n",
-           (unsigned long)(SDRAM_DEVICE_SIZE / (1024U * 1024U)),
-           (unsigned long)SDRAM_BASE,
-           (unsigned long)(TEST_SIZE / (1024U * 1024U)));
+    printf("SDRAM: test_buf[%lu KB] in .sdram @ 0x%08lX (non-cacheable)\r\n",
+           (unsigned long)(TEST_SIZE / 1024U), (unsigned long)(uintptr_t)test_buf);
 
-    volatile uint32_t *p = (volatile uint32_t *)SDRAM_BASE;
+    volatile uint32_t *p = test_buf;
     uint32_t i, word, errors, ms;
     uint32_t sum;
     double mbps;
 
     while (1)
     {
-        /* ---- Write: 32-bit store pattern over the whole region ---- */
+        /* ---- Write: 32-bit store pattern over the whole buffer ---- */
         uint32_t t0 = HAL_GetTick();
         for (i = 0; i < TEST_WORDS; i++)
         {
@@ -94,7 +94,6 @@ int main(void)
                (unsigned long)(TEST_SIZE / (1024U * 1024U)), (unsigned long)ms, mbps);
 
         /* ---- Read: minimal-overhead 32-bit loads (sum) ---- */
-        SCB_InvalidateDCache_by_Addr((void *)SDRAM_BASE, TEST_SIZE);
         t0 = HAL_GetTick();
         sum = 0;
         for (i = 0; i < TEST_WORDS; i++)
@@ -108,7 +107,6 @@ int main(void)
                (unsigned long)sum);
 
         /* ---- Verify (untimed): every word matches the write pattern ---- */
-        SCB_InvalidateDCache_by_Addr((void *)SDRAM_BASE, TEST_SIZE);
         errors = 0;
         for (i = 0; i < TEST_WORDS; i++)
         {
@@ -120,9 +118,9 @@ int main(void)
         }
         printf("Verify: %s\r\n", verify_ok(errors));
 
-        /* ---- memcpy SDRAM -> SDRAM ---- */
+        /* ---- memcpy SDRAM -> SDRAM (within test_buf) ---- */
         t0 = HAL_GetTick();
-        memcpy((void *)(SDRAM_BASE + TEST_SIZE / 2), (const void *)SDRAM_BASE, TEST_SIZE / 2);
+        memcpy(&test_buf[TEST_WORDS / 2], test_buf, TEST_SIZE / 2);
         __DSB();   /* drain writes before timing stops */
         ms = ms_since(t0);
         mbps = (double)(TEST_SIZE / 2 / (1024U * 1024U)) * 1000.0 / (double)ms;

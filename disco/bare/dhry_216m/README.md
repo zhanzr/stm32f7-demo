@@ -12,10 +12,16 @@ selected at configure time.
 
 | Toolchain    | Flags                                      | Dhrystones/s | DMIPS/MHz |
 | ------------ | ------------------------------------------ | ------------ | --------- |
-| GCC 15.3.1   | `-Ofast -ffp-contract=fast -funroll-loops` | 1,033,325    | 2.723     |
+| GCC 15.3.1   | `-Ofast -ffp-contract=fast -funroll-loops` | 519,998      | 1.370     |
+
+> The heap (where Dhrystone's `Ptr_Glb` / `Next_Ptr_Glb` records live) is in
+> the **on-board SDRAM** (write-through cacheable) — the shared board layer's
+> two-region SDRAM heap. Every store to those records is a write-through to the
+> SDRAM, which is why the score is lower than a DTCM-heap build (~2.72 DMIPS/MHz).
+> The number is the honest cost of running the malloc'd working set in SDRAM.
 
 Measured on hardware: all final values correct (Int_Glob=5, Arr_2_Glob =
-runs+10, …), one run takes ~11.6 s, comfortably above the 2 s `Too_Small_Time`
+runs+10, …), one run takes ~23 s, comfortably above the 2 s `Too_Small_Time`
 gate.
 
 > ⚠ **Do not use LTO for Dhrystone.** GCC `-flto` sees the whole program and

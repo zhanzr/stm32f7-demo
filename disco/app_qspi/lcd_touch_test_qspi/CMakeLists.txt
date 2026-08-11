@@ -1,7 +1,7 @@
-# lcd_touch_test_qspi: MIPI DSI LCD dynamic demo + FT6206 touch for the
+﻿# lcd_touch_test_qspi: MIPI DSI LCD dynamic demo + FT6206 touch for the
 # STM32F769NI (STM32F769I-Discovery) @ 216 MHz, linked for and booted from the
 # MX25L51245G at 0x90000000 (QUADSPI memory-mapped), by disco_boot. Same demo
-# as app/lcd_touch_test - the app code runs from QSPI while the LTDC/DSI use
+# as bare/lcd_touch_test - the app code runs from QSPI while the LTDC/DSI use
 # the SDRAM framebuffer.
 #
 # Pico-style workflow:

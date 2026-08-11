@@ -12,11 +12,24 @@
 #include <stdint.h>
 #include "uart_printf.h"
 
-/* Linker-provided end of static data / start of heap. */
+/* Linker-provided end of static data / start of the SDRAM heap. */
 extern char end[];
-extern char _estack[];
 
-#define HEAP_LIMIT ((char *)((uintptr_t)_estack - 0x1000))   /* leave room for the stack */
+/* The SDRAM heap tops out at the end of the physical on-board SDRAM
+ * (16 MB @ 0xC0000000 -> 0xC1000000; the FMC address window is larger but
+ * only the first 16 MB are populated). newlib also calls _sbrk() during
+ * __libc_init_array (before main), when accesses to the external SDRAM fault
+ * on this board - so those early allocations are served from a small DTCM
+ * reserve (the `.dcm_heap` linker section) instead, and the SDRAM heap is only
+ * used after Board_Init() has brought the SDRAM up. */
+#define HEAP_LIMIT ((char *)0xC1000000UL)
+
+static volatile uint8_t sdram_heap_ready;
+
+void Board_SdramReady(void)
+{
+    sdram_heap_ready = 1;
+}
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,22 +113,42 @@ int _kill(int pid, int sig)
 
 void *_sbrk(int incr)
 {
-    static char *heap_end = 0;
-    char *prev_heap_end;
+    extern char _dcm_heap_start[];
+    extern char _dcm_heap_end[];
+    static char *dcm_break = 0;
+    static char *sdram_break = 0;
+    char *p;
 
-    if (heap_end == 0)
+    if (!sdram_heap_ready)
     {
-        heap_end = end;
+        /* Pre-main (newlib __libc_init_array) allocations: DTCM reserve. */
+        if (dcm_break == 0)
+        {
+            dcm_break = _dcm_heap_start;
+        }
+        p = dcm_break;
+        if (p + incr > _dcm_heap_end)
+        {
+            errno = ENOMEM;
+            return (void *)-1;
+        }
+        dcm_break = p + incr;
+        return p;
     }
-    prev_heap_end = heap_end;
 
-    if (heap_end + incr > HEAP_LIMIT)
+    /* Normal operation: the SDRAM heap (grows up from `end`). */
+    if (sdram_break == 0)
+    {
+        sdram_break = end;
+    }
+    p = sdram_break;
+    if (p + incr > HEAP_LIMIT)
     {
         errno = ENOMEM;
         return (void *)-1;
     }
-    heap_end += incr;
-    return prev_heap_end;
+    sdram_break = p + incr;
+    return p;
 }
 
 #ifdef __cplusplus

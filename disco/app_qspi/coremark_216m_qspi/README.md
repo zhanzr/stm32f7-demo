@@ -1,6 +1,6 @@
-# coremark_216m_qspi — CoreMark 1.0 @ 216 MHz from the MX25L51245G
+﻿# coremark_216m_qspi 鈥?CoreMark 1.0 @ 216 MHz from the MX25L51245G
 
-Same as `app/coremark_216m` but linked for and booted from the on-board
+Same as `bare/coremark_216m` but linked for and booted from the on-board
 **MX25L51245G** at the QUADSPI memory-mapped base `0x90000000` (requires
 `disco_boot` in internal flash).
 
@@ -8,12 +8,13 @@ Same as `app/coremark_216m` but linked for and booted from the on-board
 
 | Location | CoreMark 1.0 | Total time |
 | -------- | ------------ | ---------- |
-| internal flash (`app/coremark_216m`) | 932.52 | 26.81 s |
-| **MX25L51245G (`app_qspi/coremark_216m_qspi`)** | **909.16** | **27.50 s** |
+| internal flash (`bare/coremark_216m`) | 932.28 | 26.82 s |
+| **MX25L51245G (`app_qspi/coremark_216m_qspi`)** | **930.93** | **26.86 s** |
 
-Slightly lower than internal flash — CoreMark is a larger binary, so the QSPI
-memory-mapped fetch path (108 MHz) limits code throughput a little. The run is
-still valid: `Correct operation validated.` (seedcrc 0xe9f5, crcfinal 0xcc42).
+CoreMark's malloc'd list lives in the on-board SDRAM (two-region heap), but it
+is a small part of the workload, so the score is close to a DTCM-heap build.
+The run is valid: `Correct operation validated.` (seedcrc 0xe9f5, crcfinal
+0xcc42).
 
 ## Build & flash
 

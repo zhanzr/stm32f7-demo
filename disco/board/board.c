@@ -15,17 +15,26 @@
   *
   * Console: USART1 (PA9 TX / PA10 RX, AF7) @ 115200 8-N-1 to the ST-Link V2
   * VCOM. I/D caches enabled. SWV/ITM is enabled in firmware as well.
+  *
+  * The on-board 16 MB SDRAM (FMC bank 1 @ 0xC0000000) is initialized here so
+  * every project gets it as a large RAM pool; the linker maps a `.sdram`
+  * section there (see stm32f769ni.ld). It is exposed as write-through cacheable
+  * so other bus masters (LTDC/DMA) see CPU writes without cache maintenance.
   */
+
+#include <stdint.h>
 
 #include "board.h"
 #include "uart_printf.h"
 #include "swv_printf.h"
+#include "stm32f769i_discovery_sdram.h"
 
 /* ------------------------------------------------------------------------ */
 /* Same MPU setup the vendor 216 MHz builds use: a 4 GB region
  * with subregions 0/1/2/7 disabled, leaving FLASH/DTCM/SRAM on the privileged
  * default memory map (Normal, write-back, cacheable) and denying access to the
- * rest (0x60000000..0xDFFFFFFF, including the unused SDRAM / FMC space). */
+ * rest. Higher-priority regions then open the FMC controller (0xA0000000) and
+ * the external SDRAM (0xC0000000). */
 static void MPU_Config(void)
 {
     MPU_Region_InitTypeDef MPU_InitStruct = {0};
@@ -46,11 +55,70 @@ static void MPU_Config(void)
 
     HAL_MPU_ConfigRegion(&MPU_InitStruct);
     HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+
+    MPU_OpenFmcSdram();
+}
+
+/* ------------------------------------------------------------------------ */
+/* Add MPU regions for the FMC controller (0xA0000000, device) and the FMC
+ * SDRAM (0xC0000000, write-through cacheable). Idempotent; also called from
+ * SDRAM_Init() so the QSPI_APP path (which skips MPU_Config) gets them too. */
+void MPU_OpenFmcSdram(void)
+{
+    MPU_Region_InitTypeDef r = {0};
+
+    /* FMC control registers @ 0xA0000000, 8 KB, device memory. */
+    r.Enable           = MPU_REGION_ENABLE;
+    r.Number           = MPU_REGION_NUMBER2;
+    r.BaseAddress      = 0xA0000000u;
+    r.Size             = MPU_REGION_SIZE_8KB;
+    r.SubRegionDisable = 0;
+    r.TypeExtField     = MPU_TEX_LEVEL0;
+    r.AccessPermission = MPU_REGION_FULL_ACCESS;
+    r.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
+    r.IsShareable      = MPU_ACCESS_SHAREABLE;
+    r.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
+    r.IsBufferable     = MPU_ACCESS_BUFFERABLE;
+    HAL_MPU_ConfigRegion(&r);
+
+    /* SDRAM @ 0xC0000000, 32 MB, write-through cacheable (C=1, B=0). */
+    r.Number           = MPU_REGION_NUMBER1;
+    r.BaseAddress      = 0xC0000000u;
+    r.Size             = MPU_REGION_SIZE_32MB;
+    r.IsCacheable      = MPU_ACCESS_CACHEABLE;
+    r.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
+    HAL_MPU_ConfigRegion(&r);
+}
+
+/* ------------------------------------------------------------------------ */
+/* Bring up the on-board SDRAM (FMC bank 1 @ 0xC0000000, vendor BSP) at the
+ * 216 MHz clock, then clear the opt-in `.sdram` linker section so buffers
+ * placed there start zeroed. Only afterwards is the malloc() heap switched
+ * over to the SDRAM (Board_SdramReady -> syscalls.c _sbrk). */
+static void SDRAM_Init(void)
+{
+    extern char _sdram_start[];
+    extern char _sdram_end[];
+    char *p;
+
+    MPU_OpenFmcSdram();
+
+    if (BSP_SDRAM_Init() != SDRAM_OK)
+    {
+        Error_Handler();
+    }
+
+    Board_SdramReady();   /* from now on _sbrk/malloc uses the SDRAM heap */
+
+    for (p = _sdram_start; p < _sdram_end; p++)
+    {
+        *p = 0;
+    }
 }
 
 /* ------------------------------------------------------------------------ */
 /* Clock tree as in the vendor 216 MHz template (HSE 25 MHz -> PLL M=25 N=432
- * P=2 -> 216 MHz SYSCLK, HCLK 216 MHz, APB1 54 MHz, APB2 108 MHz,
+ * P=2 -> SYSCLK 216 MHz, HCLK 216 MHz, APB1 54 MHz, APB2 108 MHz,
  * OverDrive on, VOS scale 1, flash latency 7). */
 #ifdef QSPI_APP
 /* QSPI apps: the bootloader owns the clock tree, so an empty
@@ -116,6 +184,7 @@ void Board_Init(void)
     SCB_EnableDCache();
 
     SystemClock_Config();   /* no-op for QSPI apps */
+    SDRAM_Init();           /* on-board 16 MB SDRAM @ 0xC0000000 */
     UART_Init();
     SWV_Init();
 }

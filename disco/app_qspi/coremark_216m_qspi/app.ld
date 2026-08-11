@@ -1,13 +1,17 @@
-/* qspi_map stage-2 app linker script - runs entirely from the QSPI-mapped
+﻿/* qspi_map stage-2 app linker script - runs entirely from the QSPI-mapped
  * space (QUADSPI memory-mapped mode).
  *
  * Memory map:
  *   QSPI (rx) : 8 MB @ 0x90000000   (vector table + code + rodata + .data LMA)
- *   DTCM (xrw): 128 KB @ 0x20000000 (data + bss + stack)
+ *   DTCM (xrw): 128 KB @ 0x20000000 (stack + RW/ZI + .dcm_heap reserve)
+ *   SDRAM (rwx): 16 MB @ 0xC0000000 (heap + opt-in .sdram buffers)
  *
  * The bootloader puts the QUADSPI in memory-mapped mode and jumps to the reset
- * vector at 0x90000000. This app deliberately does NOT own the RCC/PLL2 clocks
- * (the bootloader does) - see system_app.c.
+ * vector at 0x90000000. .data/.bss/stack stay in the on-chip DTCM; the SDRAM
+ * carries the `.sdram` buffers and the malloc() heap (newlib's pre-main
+ * allocations use the small .dcm_heap DTCM reserve first - see syscalls.c).
+ * This app deliberately does NOT own the RCC/PLL2 clocks (the bootloader
+ * does) - see system_app.c.
  */
 
 ENTRY(Reset_Handler)
@@ -16,6 +20,7 @@ MEMORY
 {
   QSPI (rx)  : ORIGIN = 0x90000000, LENGTH = 8M
   DTCM (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
+  SDRAM (rwx): ORIGIN = 0xC0000000, LENGTH = 16M
 }
 
 _estack        = ORIGIN(DTCM) + LENGTH(DTCM);  /* top of DTCM, stack grows down */
@@ -117,15 +122,41 @@ SECTIONS
     __bss_end__ = _ebss;
   } >DTCM
 
-  ._user_heap_stack :
+  /* Small on-chip heap RESERVE for newlib's pre-main _sbrk() calls (they
+   * happen before the SDRAM is usable - see syscalls.c / stm32f769ni.ld). */
+  .dcm_heap :
+  {
+    . = ALIGN(8);
+    _dcm_heap_start = .;
+    . = . + 0x2000;   /* 8 KB */
+    _dcm_heap_end = .;
+    . = ALIGN(8);
+  } >DTCM
+
+  /* On-board SDRAM (16 MB @ 0xC0000000). NOBITS - zeroed by board.c's
+   * SDRAM_Init() after the FMC/SDRAM is up, not by the startup. */
+  .sdram (NOLOAD) :
+  {
+    . = ALIGN(4);
+    _sdram_start = .;
+    *(.sdram)
+    *(.sdram.*)
+    . = ALIGN(4);
+    _sdram_end = .;
+  } >SDRAM
+
+  /* Heap in the SDRAM, after the .sdram buffers (capped at 0xC1000000 by
+   * syscalls.c). newlib's pre-main _sbrk() calls use the .dcm_heap DTCM
+   * reserve instead, then _sbrk switches here once Board_Init()/SDRAM_Init()
+   * has brought the SDRAM up - see syscalls.c and stm32f769ni.ld. */
+  ._user_heap :
   {
     . = ALIGN(8);
     PROVIDE ( end = . );
     PROVIDE ( _end = . );
     . = . + _Min_Heap_Size;
-    . = . + _Min_Stack_Size;
     . = ALIGN(8);
-  } >DTCM
+  } >SDRAM
 
   /* Stabs debugging sections. */
   .stab          0 : { *(.stab) }

@@ -1,4 +1,4 @@
-# blink_hello: minimal STM32F769NI (STM32F769I-Discovery) template @ 216 MHz.
+﻿# blink_hello: minimal STM32F769NI (STM32F769I-Discovery) template @ 216 MHz.
 # Toggles the three on-board LEDs (LD1 PJ13, LD2 PJ5, LD3 PA12, all high
 # active) and prints a line over USART1 (ST-Link VCOM @ 115200) on every
 # toggle. Intended as the starting point for new disco projects: clock,

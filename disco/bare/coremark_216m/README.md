@@ -12,7 +12,11 @@ selected at configure time.
 
 | Toolchain  | Flags                                      | CoreMark 1.0 | Iterations/s | Total time |
 | ---------- | ------------------------------------------ | ------------ | ------------ | ---------- |
-| GCC 15.3.1 | `-Ofast -ffp-contract=fast -funroll-loops` | 932.52       | 932.52       | 26.81 s    |
+| GCC 15.3.1 | `-Ofast -ffp-contract=fast -funroll-loops` | 932.28       | 932.28       | 26.82 s    |
+
+The heap is in the on-board SDRAM (two-region heap, write-through cacheable);
+CoreMark's malloc'd list lives there, but it is a small part of the workload, so
+the score is effectively unchanged from a DTCM-heap build.
 
 Measured on hardware: the build printed **`Correct operation validated.`** with
 the expected CRCs (seedcrc 0xe9f5, crcfinal 0xcc42).

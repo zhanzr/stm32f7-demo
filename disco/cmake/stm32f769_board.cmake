@@ -60,6 +60,11 @@ function(stm32f769_apply_board TGT OPT)
         ${F769_HAL}/Src/stm32f7xx_hal_rcc_ex.c
         ${F769_HAL}/Src/stm32f7xx_hal_uart.c
         ${F769_HAL}/Src/stm32f7xx_hal_uart_ex.c
+        # On-board SDRAM (board.c inits it for every project).
+        ${F769_HAL}/Src/stm32f7xx_hal_sdram.c
+        ${F769_HAL}/Src/stm32f7xx_ll_fmc.c
+        ${F769_HAL}/Src/stm32f7xx_hal_dma.c
+        ${F769_ROOT}/vendor/Drivers/BSP/STM32F769I-Discovery/stm32f769i_discovery_sdram.c
     )
 
     target_include_directories(${TGT} PRIVATE
@@ -68,6 +73,7 @@ function(stm32f769_apply_board TGT OPT)
         ${F769_HAL}/Inc/Legacy
         ${F769_CMSDEV}/Include
         ${F769_CMSIS}/Include
+        ${F769_ROOT}/vendor/Drivers/BSP/STM32F769I-Discovery
     )
 
     # armclang has no bundled libc headers: point it at the GNU newlib include
