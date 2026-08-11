@@ -4,11 +4,9 @@ Firmware projects for the **STM32F769I-Discovery** board (STM32F769NI @
 216 MHz).
 
 ![Board photos](board_0.png)
-
 ![board_1](board_1.png)
 ![board_2](board_2.png)
-![board_3](board_3.png)
-![board_4](board_4.png)
+
 
 ## Board (hardware)
 
