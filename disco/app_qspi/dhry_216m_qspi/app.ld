@@ -1,4 +1,4 @@
-﻿/* qspi_map stage-2 app linker script - runs entirely from the QSPI-mapped
+/* qspi_map stage-2 app linker script - runs entirely from the QSPI-mapped
  * space (QUADSPI memory-mapped mode).
  *
  * Memory map:

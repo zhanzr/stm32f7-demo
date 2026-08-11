@@ -1,4 +1,4 @@
-# disco_boot — STM32F769I-Discovery bootloader (internal flash)
+# disco_boot - STM32F769I-Discovery bootloader (internal flash)
 
 Minimal bootloader in internal flash. Brings up the 216 MHz clock tree and
 console, initializes the on-board **MX25L51245G** (64 MB) via the QUADSPI, then

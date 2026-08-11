@@ -14,8 +14,8 @@
 /* ------------------------------------------------------------------------ */
 /* ADC internal channels (see RM0410: ADC1_IN17 = VREFINT, ADC1_IN18 =
  * temperature sensor / VBAT). Factory calibration (stm32f769xx.h, at Vref+
- * = 3.3 V): VREFINT_CAL @ 0x1FF0F44A, TS_CAL1 @ 0x1FF0F44C (30 °C),
- * TS_CAL2 @ 0x1FF0F44E (110 °C). */
+ * = 3.3 V): VREFINT_CAL @ 0x1FF0F44A, TS_CAL1 @ 0x1FF0F44C (30  degC),
+ * TS_CAL2 @ 0x1FF0F44E (110  degC). */
 #define ADC_CAL_VREF_MV   3300U
 #define ADC_MAX_VALUE     4095U
 
@@ -81,8 +81,8 @@ static void ADC_Print(void)
     uint32_t vbat_raw    = ADC_ReadChannel(ADC_CHANNEL_VBAT, ADC_SAMPLETIME_480CYCLES);
 
     uint16_t vrefint_cal = *((uint16_t *)0x1FF0F44AU);   /* VREFINT_CAL */
-    uint16_t ts_cal1     = *((uint16_t *)0x1FF0F44CU);   /* TS_CAL1, 30  °C */
-    uint16_t ts_cal2     = *((uint16_t *)0x1FF0F44EU);   /* TS_CAL2, 110 °C */
+    uint16_t ts_cal1     = *((uint16_t *)0x1FF0F44CU);   /* TS_CAL1, 30   degC */
+    uint16_t ts_cal2     = *((uint16_t *)0x1FF0F44EU);   /* TS_CAL2, 110  degC */
 
     /* Actual VDDA inferred from the VREFINT reading (factory cal @ 3300 mV). */
     float vdda_mv = (float)ADC_CAL_VREF_MV * (float)vrefint_cal / (float)vrefint_raw;

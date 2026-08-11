@@ -1,4 +1,4 @@
-﻿/* GNU ARM GCC linker script for STM32F769NIH6 (STM32F769I-Discovery).
+/* GNU ARM GCC linker script for STM32F769NIH6 (STM32F769I-Discovery).
  *
  * Memory map (F769NI):
  *   FLASH      :   2 MB @ 0x08000000   (execution)

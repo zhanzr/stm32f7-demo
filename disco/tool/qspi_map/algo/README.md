@@ -6,11 +6,11 @@ Position-independent flash algorithm for programming the on-board
 
 ## Files
 
-- `flash_mx25l512_qspi.c` — the algorithm (register-level QUADSPI, no HAL).
-- `algo.ld` — links it at `0x20000000` for the position-independent blob.
-- `build_algo.py` — compiles it and generates `target_mx25l512_qspi.yaml`
+- `flash_mx25l512_qspi.c` - the algorithm (register-level QUADSPI, no HAL).
+- `algo.ld` - links it at `0x20000000` for the position-independent blob.
+- `build_algo.py` - compiles it and generates `target_mx25l512_qspi.yaml`
   (`python build_algo.py flash_mx25l512_qspi.c 0x1000`).
-- `target_mx25l512_qspi.yaml` — probe-rs chip description (auto-generated).
+- `target_mx25l512_qspi.yaml` - probe-rs chip description (auto-generated).
 
 ## How it works
 
@@ -35,12 +35,12 @@ Position-independent flash algorithm for programming the on-board
 | `EraseSector` | **OK** |
 | `ProgramPage` | **OK** |
 | `Verify` | **OK** |
-| Full `ninja flash` → boot | **OK** (`disco_boot` boots `blink_hello_qspi`) |
+| Full `ninja flash` -> boot | **OK** (`disco_boot` boots `blink_hello_qspi`) |
 
 ## Bring-up notes (things that were wrong first)
 
 1. **QSPI clock bit**: the QUADSPI clock enable is `RCC_AHB3ENR` bit 1 (not a
-   bit in the middle of the register) — the algorithm's Init timed out until
+   bit in the middle of the register) - the algorithm's Init timed out until
    this was fixed.
 2. **QPI-mode flash**: the boot/app leave the MX25L512 in QPI mode, so 1-line
    SPI commands are ignored. The reset must be sent **4-line** first, which

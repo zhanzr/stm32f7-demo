@@ -1,10 +1,10 @@
-# stm32f769_prj — STM32F769 development projects
+# stm32f769_prj - STM32F769 development projects
 
 Bare-metal firmware projects for the **STM32F769I-Discovery** board
 (STM32F769NI, Cortex-M7 @ 216 MHz), built with CMake + Ninja +
 GNU arm-none-eabi-gcc (Keil AC6/armclang optional).
 
-The whole board project lives in the **`disco/`** folder — it holds the shared
+The whole board project lives in the **`disco/`** folder - it holds the shared
 board layer (`board/`, `cmake/`, `drivers/`) plus the bare-metal applications
 under `disco/bare/`. Each application has its own `build.sh`, `CMakeLists.txt`,
 `src/` and a `README.md` with the project-specific build/flash/measure
@@ -24,14 +24,14 @@ are in `disco/README.md`.
 
 ## Projects
 
-* `blink_hello` — 3-LED blink + UART console, also measures the on-chip ADC
+* `blink_hello` - 3-LED blink + UART console, also measures the on-chip ADC
   internal channels (die temperature / VREFINT / battery voltage); prints the
   current frequency + ADC values each second.
-* `dhry_216m` — Dhrystone 2.1 benchmark @ 216 MHz.
-* `coremark_216m` — CoreMark 1.0 benchmark @ 216 MHz.
-* `qspi_flash_test` — MX25L51245G QSPI flash erase/program/read benchmark.
-* `sdram_test` — on-board SDRAM write/read/memcpy benchmark.
-* `lcd_touch_test` — MIPI DSI LCD (OTM8009A 800x480) + FT6206 touch demo.
+* `dhry_216m` - Dhrystone 2.1 benchmark @ 216 MHz.
+* `coremark_216m` - CoreMark 1.0 benchmark @ 216 MHz.
+* `qspi_flash_test` - MX25L51245G QSPI flash erase/program/read benchmark.
+* `sdram_test` - on-board SDRAM write/read/memcpy benchmark.
+* `lcd_touch_test` - MIPI DSI LCD (OTM8009A 800x480) + FT6206 touch demo.
 
 `disco/app_qspi/` holds the QSPI-boot versions (`blink_hello_qspi`,
 `dhry_216m_qspi`, `coremark_216m_qspi`, `lcd_touch_test_qspi`) that run from the

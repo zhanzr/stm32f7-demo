@@ -1,4 +1,4 @@
-﻿# blink_hello_qspi: minimal STM32F769NI (STM32F769I-Discovery) QSPI app
+# blink_hello_qspi: minimal STM32F769NI (STM32F769I-Discovery) QSPI app
 # @ 216 MHz. Same as bare/blink_hello (LD1/2/3 + USART1 console) but linked for
 # and booted from the MX25L51245G at 0x90000000 (QUADSPI memory-mapped), by
 # disco_boot in internal flash.

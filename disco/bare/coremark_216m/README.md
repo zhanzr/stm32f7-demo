@@ -1,9 +1,9 @@
-# CoreMark 1.0 @ 216 MHz — STM32F769NI (STM32F769I-Discovery)
+# CoreMark 1.0 @ 216 MHz - STM32F769NI (STM32F769I-Discovery)
 
 EEMBC CoreMark 1.0 (stock `coremark_1_0_1` sources), **25,000 iterations**, on
 the STM32F769I-Discovery board (STM32F769NI) clocked at **216 MHz** (HSE
-25 MHz, PLL M=25 N=432 P=2 → SYSCLK 216 MHz, HCLK 216 MHz, APB1 54 MHz,
-APB2 108 MHz, OverDrive on — clock tree copied verbatim from the vendor 216 MHz
+25 MHz, PLL M=25 N=432 P=2 -> SYSCLK 216 MHz, HCLK 216 MHz, APB1 54 MHz,
+APB2 108 MHz, OverDrive on - clock tree copied verbatim from the vendor 216 MHz
 template). Compiler-agnostic: the same sources build with either
 **GNU arm-none-eabi-gcc** or **armclang** (AC6 / the LLVM embedded toolchain),
 selected at configure time.
@@ -52,10 +52,10 @@ least ~11 s so one full (~10 s) run completes and the final
 
 ## Notes
 
-* **SysTick**: `board.c` defines `SysTick_Handler` → `HAL_IncTick()` (same
-  requirement as the Dhrystone port — without it the core wedges in the weak
+* **SysTick**: `board.c` defines `SysTick_Handler` -> `HAL_IncTick()` (same
+  requirement as the Dhrystone port - without it the core wedges in the weak
   handler on the first tick).
-* **ITERATIONS**: 25,000 — at 216 MHz a run takes ~10 s, valid (CoreMark
+* **ITERATIONS**: 25,000 - at 216 MHz a run takes ~10 s, valid (CoreMark
   rejects runs shorter than 10 s).
 * Port uses `SEED_VOLATILE` (fixed volatile seeds, so the known-CRC validation
   still matches), `MEM_LOCATION "Static"`, `HAS_FLOAT 1`, and the CORE_TICKS

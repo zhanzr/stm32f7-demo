@@ -24,7 +24,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.bin
     DEPENDS ${PROJECT_NAME}.elf
     COMMENT "objcopy -> ${PROJECT_NAME}.bin (raw binary)")
 
-# `ninja hex` / `ninja bin` — explicit image builds "in case" you need them.
+# `ninja hex` / `ninja bin` - explicit image builds "in case" you need them.
 # `hex` is marked ALL so a plain `ninja` also produces it (that is the file
 # `ninja flash` needs); `bin` is only built on demand.
 add_custom_target(hex ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex)

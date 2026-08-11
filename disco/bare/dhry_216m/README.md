@@ -1,9 +1,9 @@
-# Dhrystone 2.1 @ 216 MHz — STM32F769NI (STM32F769I-Discovery)
+# Dhrystone 2.1 @ 216 MHz - STM32F769NI (STM32F769I-Discovery)
 
 Classic Dhrystone 2.1 (dhry_1.c / dhry_2.c / dhry.h), **12,000,000 runs**, on
 the STM32F769I-Discovery board (STM32F769NI) clocked at **216 MHz** (HSE
-25 MHz, PLL M=25 N=432 P=2 → SYSCLK 216 MHz, HCLK 216 MHz, APB1 54 MHz,
-APB2 108 MHz, OverDrive on — clock tree copied verbatim from the vendor 216 MHz
+25 MHz, PLL M=25 N=432 P=2 -> SYSCLK 216 MHz, HCLK 216 MHz, APB1 54 MHz,
+APB2 108 MHz, OverDrive on - clock tree copied verbatim from the vendor 216 MHz
 template). Compiler-agnostic: the same sources build with either
 **GNU arm-none-eabi-gcc** or **armclang** (AC6 / the LLVM embedded toolchain),
 selected at configure time.
@@ -15,16 +15,16 @@ selected at configure time.
 | GCC 15.3.1   | `-Ofast -ffp-contract=fast -funroll-loops` | 519,998      | 1.370     |
 
 > The heap (where Dhrystone's `Ptr_Glb` / `Next_Ptr_Glb` records live) is in
-> the **on-board SDRAM** (write-through cacheable) — the shared board layer's
+> the **on-board SDRAM** (write-through cacheable) - the shared board layer's
 > two-region SDRAM heap. Every store to those records is a write-through to the
 > SDRAM, which is why the score is lower than a DTCM-heap build (~2.72 DMIPS/MHz).
 > The number is the honest cost of running the malloc'd working set in SDRAM.
 
 Measured on hardware: all final values correct (Int_Glob=5, Arr_2_Glob =
-runs+10, …), one run takes ~23 s, comfortably above the 2 s `Too_Small_Time`
+runs+10, ...), one run takes ~23 s, comfortably above the 2 s `Too_Small_Time`
 gate.
 
-> ⚠ **Do not use LTO for Dhrystone.** GCC `-flto` sees the whole program and
+> ! **Do not use LTO for Dhrystone.** GCC `-flto` sees the whole program and
 > hoists loop-invariant work out of the timed loop, inflating the score. The
 > LTO number is meaningless and is **excluded from the table above** (a known
 > GCC artifact, not a real measurement).
@@ -60,11 +60,11 @@ longer than one full run to get a clean result line.
 
 ## Notes
 
-* **SysTick**: `board.c` defines `SysTick_Handler` → `HAL_IncTick()`. Without
+* **SysTick**: `board.c` defines `SysTick_Handler` -> `HAL_IncTick()`. Without
   it the SysTick (enabled by `HAL_Init`) jumps into the startup weak handler
   (an infinite `b .` loop) the moment the first tick fires, so the firmware
   hangs with no output.
-* **RUN_NUMBER**: kept at 12,000,000 — at 216 MHz a run takes ~10 s,
+* **RUN_NUMBER**: kept at 12,000,000 - at 216 MHz a run takes ~10 s,
   comfortably above the 2 s `Too_Small_Time` gate.
 * **Do not use LTO for Dhrystone**: GCC `-flto` hoists loop-invariant work out
   of the timed loop and inflates the score (a known GCC artifact).

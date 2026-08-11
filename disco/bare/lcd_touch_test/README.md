@@ -1,8 +1,8 @@
-# lcd_touch_test — MIPI DSI LCD dynamic demo + capacitive touch @ 216 MHz
+# lcd_touch_test - MIPI DSI LCD dynamic demo + capacitive touch @ 216 MHz
 
 Drives the **4" 800x480 MIPI DSI** LCD (OTM8009A panel) in **DSI video mode**
 through LTDC with the SDRAM as framebuffer, plus the **FT6206** capacitive
-touch controller on I2C4 — all via the vendor BSP
+touch controller on I2C4 - all via the vendor BSP
 (`stm32f769i_discovery_lcd` / `stm32f769i_discovery_ts`).
 
 The screen shows a looping dynamic demo while the touch sensor stays active the
@@ -12,11 +12,11 @@ USART1 console.
 ## Display (MIPI DSI)
 
 * Interface: **MIPI DSI** host in **video (burst) mode**, 2 data lanes.
-* Panel: **OTM8009A**, **800x480** (landscape), RGB888, DSI video mode — the
+* Panel: **OTM8009A**, **800x480** (landscape), RGB888, DSI video mode - the
   **full 480 lines** are driven (LTDC/DSI active height = 480). Some ST docs
   (UM2033) call this panel "800 x 472"; we do not use that reduced height.
 * Framebuffer: a `uint32_t` array in the on-board **16 MB SDRAM** (the shared
-  `.sdram` linker section), passed to `BSP_LCD_LayerDefaultInit()` — write-through
+  `.sdram` linker section), passed to `BSP_LCD_LayerDefaultInit()` - write-through
   cacheable so the LTDC, a separate bus master, sees CPU writes. No hardcoded
   `0xC0000000` address, so the framebuffer cannot collide with anything else in
   the SDRAM.
@@ -27,7 +27,7 @@ USART1 console.
 | Phase | What you see |
 | ----- | ------------ |
 | **Shapes** | 10 floating/bouncing squares, circles, triangles (5 s) |
-| **Pure colors** | RED…BLACK full-screen, one per color (4 s each) |
+| **Pure colors** | RED...BLACK full-screen, one per color (4 s each) |
 | **Gradient** | animated hue sweep down the color wheel (5 s) |
 | **LED test** | the three on-board LEDs LD1/LD2/LD3 toggle on/off (3 s each) |
 

@@ -1,10 +1,10 @@
-﻿# coremark_216m_qspi 鈥?CoreMark 1.0 @ 216 MHz from the MX25L51245G
+# coremark_216m_qspi - CoreMark 1.0 @ 216 MHz from the MX25L51245G
 
 Same as `bare/coremark_216m` but linked for and booted from the on-board
 **MX25L51245G** at the QUADSPI memory-mapped base `0x90000000` (requires
 `disco_boot` in internal flash).
 
-## Results (measured on hardware, 216 MHz, GCC 15.3.1)
+   Results (measured on hardware, 216 MHz, GCC 15.3.1)
 
 | Location | CoreMark 1.0 | Total time |
 | -------- | ------------ | ---------- |
@@ -16,11 +16,11 @@ is a small part of the workload, so the score is close to a DTCM-heap build.
 The run is valid: `Correct operation validated.` (seedcrc 0xe9f5, crcfinal
 0xcc42).
 
-## Build & flash
+   Build & flash
 
 ```bash
-bash build.sh                 # -> build/coremark_216m.hex (linked at 0x90000000)
-ninja flash                   # writes the MX25L51245G via the QUADSPI algorithm
+bash build.sh                   -> build/coremark_216m.hex (linked at 0x90000000)
+ninja flash                     writes the MX25L51245G via the QUADSPI algorithm
 ```
 
 `disco_boot` must be in internal flash (see `tool/disco_boot/README.md`).

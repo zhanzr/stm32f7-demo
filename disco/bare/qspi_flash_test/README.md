@@ -1,11 +1,11 @@
-# qspi_flash_test — MX25L51245G QSPI flash benchmark @ 216 MHz
+# qspi_flash_test - MX25L51245G QSPI flash benchmark @ 216 MHz
 
 Benchmarks the on-board **MX25L51245G** (64 MB) QSPI NOR flash on the
 STM32F769I-Discovery via the vendor BSP driver (`stm32f769i_discovery_qspi`)
 in **4-wire QPI mode** (QUADSPI at 108 MHz = SYSCLK/2). Indirect (FIFO)
-transfers only — **no memory-mapped remap**.
+transfers only - **no memory-mapped remap**.
 
-Measured over a 128 KB region (32 × 4 KB subsectors, pages of 256 B):
+Measured over a 128 KB region (32 x 4 KB subsectors, pages of 256 B):
 erase (subsector), program (page), read (indirect) + verify.
 
 ## Results (measured on hardware, 216 MHz, GCC 15.3.1, QPI mode)
