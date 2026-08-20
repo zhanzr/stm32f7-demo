@@ -1,40 +1,55 @@
-# stm32f769_prj - STM32F769 development projects
+# stm32f7-demo - STM32F7 development projects
 
-Bare-metal firmware projects for the **STM32F769I-Discovery** board
-(STM32F769NI, Cortex-M7 @ 216 MHz), built with CMake + Ninja +
-GNU arm-none-eabi-gcc (Keil AC6/armclang optional).
+Bare-metal firmware projects for multiple **STM32F7** boards (Cortex-M7),
+built with CMake + Ninja + GNU arm-none-eabi-gcc (Keil AC6/armclang optional).
 
-The whole board project lives in the **`disco/`** folder - it holds the shared
-board layer (`board/`, `cmake/`, `drivers/`) plus the bare-metal applications
-under `disco/bare/`. Each application has its own `build.sh`, `CMakeLists.txt`,
-`src/` and a `README.md` with the project-specific build/flash/measure
-instructions and its measured benchmark results.
+Each board lives in its own folder and contains its board layer (`board/`,
+`cmake/`) plus the bare-metal applications (`bare/`). The F7 **HAL + CMSIS
+drivers come from a single shared STM32Cube_FW_F7 package** (see
+`cmake/stm32cubef7.cmake` for `STM32CUBE_F7`), so no board duplicates the
+driver tree.
+
+## Boards
+
+| Folder        | Board                     | MCU          | Console                            |
+| ------------- | ------------------------- | ------------ | ---------------------------------- |
+| `disco-f769/` | STM32F769I-Discovery      | STM32F769NI  | USART1 (PA9/PA10), ST-Link V2 VCOM |
+| `nucleo-f722/`| NUCLEO-F722ZE             | STM32F722ZE  | USART3 (PD8/PD9), ST-Link VCP      |
+
+* `disco-f769/` - the STM32F769I-Discovery board (216 MHz): benchmarks
+  (`dhry_216m`, `coremark_216m`), SDRAM/QSPI/LCD/Ethernet demos, and external
+  QSPI boot (`app_qspi/`, `tool/`). It carries its own vendored F7 HAL/CMSIS
+  (from the same STM32Cube_FW_F7 package); the other boards share the package
+  directly. See `disco-f769/README.md`.
+* `nucleo-f722/` - the NUCLEO-F722ZE board (216 MHz), shares the F7
+  HAL/CMSIS from the package. See `nucleo-f722/README.md`.
+
+There is also a standalone `e_server/` (repo root) with the web app + reference
+backend used by the `disco-f769/bare/eth_http` demo.
 
 ## Build & flash
 
+Each project has its own `build.sh` + `CMakeLists.txt`, then `ninja flash` via
+probe-rs on the board's on-board ST-Link:
+
 ```bash
-cd disco/bare/<project>
+cd nucleo-f722/bare/blink_hello
 bash build.sh                # == cmake -G Ninja .. && ninja  (GCC, default)
-ninja flash                  # probe-rs --chip STM32F769NI via on-board ST-Link V2
+ninja flash                  # probe-rs (SWD) on the on-board ST-Link
 ```
 
-Console: USART1 at 115200 8-N-1 on the ST-Link V2 VCOM (`COMxx`, number varies
-per machine). Board-specific details (hardware, clock tree, images, flashing)
-are in `disco/README.md`.
+If several boards are attached, pin the probe at configure time with
+`-DDEBUG_PROBE=<selector>` (from `probe-rs list`).
 
-## Projects
+Console per board as listed above at 115200 8-N-1 (`COMxx`, varies per
+machine). Board-specific details (hardware, clock tree, memory map, flashing)
+are in each board's `README.md`.
 
-* `blink_hello` - 3-LED blink + UART console, also measures the on-chip ADC
-  internal channels (die temperature / VREFINT / battery voltage); prints the
-  current frequency + ADC values each second.
-* `dhry_216m` - Dhrystone 2.1 benchmark @ 216 MHz.
-* `coremark_216m` - CoreMark 1.0 benchmark @ 216 MHz.
-* `qspi_flash_test` - MX25L51245G QSPI flash erase/program/read benchmark.
-* `sdram_test` - on-board SDRAM write/read/memcpy benchmark.
-* `lcd_touch_test` - MIPI DSI LCD (OTM8009A 800x480) + FT6206 touch demo.
+## Projects (per board)
 
-`disco/app_qspi/` holds the QSPI-boot versions (`blink_hello_qspi`,
-`dhry_216m_qspi`, `coremark_216m_qspi`, `lcd_touch_test_qspi`) that run from the
-MX25L51245G at `0x90000000`, booted by `disco/tool/disco_boot`.
+* `blink_hello` - 3-LED blink + UART console (current frequency), and the
+  on-chip ADC internal channels (die temperature / VREFINT / battery voltage).
+* (disco-f769) benchmarks, SDRAM/QSPI/LCD eth demos, QSPI boot - see
+  `disco-f769/README.md`.
 
 Measured benchmark scores are in each project's `README.md`.

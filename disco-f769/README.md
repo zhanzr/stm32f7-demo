@@ -1,4 +1,4 @@
-# disco - STM32F769I-Discovery board project
+# disco-f769 - STM32F769I-Discovery board project
 
 Firmware projects for the **STM32F769I-Discovery** board (STM32F769NI @
 216 MHz).

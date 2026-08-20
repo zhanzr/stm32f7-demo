@@ -91,7 +91,7 @@ Then open `http://localhost:8080/`.
 ## Porting to the board
 
 `web_assets.h` drops straight into flash; `server.c`'s routing is the blueprint
-for an embedded server. **Already done** in `disco/bare/eth_http/`: its
+for an embedded server. **Already done** in `disco-f769/bare/eth_http/`: its
 `build.sh` runs `python e_server/build_web.py --out Inc/web_assets.h` and the
 custom lwIP raw-TCP server (`src/http_server.c`) serves this exact site and
 API - `/api/leds` and `/api/adc` read the real on-board LEDs and ADC channels
