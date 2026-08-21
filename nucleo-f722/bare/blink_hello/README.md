@@ -25,11 +25,14 @@ second you should see, e.g.:
 
 ```
 === blink_hello on STM32F722ZE @ 216000000 Hz ===
-ADC: VREFINT raw=1494 cal=1499 -> VDDA=3311 mV | Temp=38.7 C | VBAT=3.331 V @ 216000000 Hz
+ADC: VREFINT raw=1494 cal=1499 -> VDDA=3311 mV | Temp=41.6 C | VBAT=3.33 V @ 216000000 Hz
 ```
 
 Note the nucleo HSE is the ST-Link MCO (8 MHz bypass), not a crystal; see the
-board README.
+board README. The board layer builds with `-mfpu=fpv5-sp-d16` (single-precision
+FPU only - the F722 has an SFPU) so `float` math uses the FPU and `double`
+falls back to software; newlib's `%f` works (the full double-precision VFP path
+would fault on this silicon).
 
 The board layer (clock init to 216 MHz, USART3 console, SWV/ITM, startup,
 linker) is in `../../board/`; the F7 HAL + CMSIS come from the shared

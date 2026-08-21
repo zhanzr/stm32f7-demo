@@ -13,17 +13,16 @@
 #define LED3_PIN  GPIO_PIN_14
 
 /* ------------------------------------------------------------------------ */
-/* ADC internal channels (see RM0431: ADC1_IN16 = temp sensor, ADC1_IN17 =
- * VREFINT, ADC1_IN18 = VBAT; VSENSE/VREFINT/VBAT share the internal channel).
- * Factory calibration on the F722 (stm32f722xx.h, acquired at Vref+=3.3 V):
+/* ADC internal channels (see RM0431): VREFINT, temperature sensor and VBAT
+ * share the internal ADC channel.
+ * Factory calibration on the F722 (stm32f722xx.h, acquired at Vref+ = 3.3 V):
  *  - VREFINT_CAL_ADDR_CMSIS        => 0x1FF07A2A
  *  - TEMPSENSOR_CAL1_ADDR_CMSIS    => 0x1FF07A2C (30  degC)
  *  - TEMPSENSOR_CAL2_ADDR_CMSIS    => 0x1FF07A2E (110 degC)
  *
- * Note on float printf: this toolchain's newlib %f triggers a divide-by-zero
- * HardFault (CFSR.DIVBYZERO), so the ADC values are formatted as scaled
- * integers instead of %f - the output is the same (temp in 0.1 degC, VDDA in
- * mV, VBAT in 0.01 V) and matches the disco-f769 blink_hello output. */
+ * Note: the F722 has an SFPU (single-precision FPU only); the board layer
+ * builds with -mfpu=fpv5-sp-d16 (single-precision VFP), so float math uses
+ * the FPU and double math falls back to software - and newlib's %f works. */
 #define ADC_CAL_VREF_MV   3300U
 #define ADC_MAX_VALUE     4095U
 
@@ -89,24 +88,20 @@ static void ADC_Print(void)
     uint32_t ts_cal1     = *((uint16_t *)TEMPSENSOR_CAL1_ADDR_CMSIS);  /* 0x1FF07A2C, 30  degC */
     uint32_t ts_cal2     = *((uint16_t *)TEMPSENSOR_CAL2_ADDR_CMSIS);  /* 0x1FF07A2E, 110 degC */
 
-    /* All integer arithmetic to avoid the broken libc %f path. */
-    unsigned long vdda_mv = (unsigned long)ADC_CAL_VREF_MV * vrefint_cal / vrefint_raw;
+    /* All arithmetic uses single-precision float (the F722 has an SFPU);
+     * double operations fall back to software (the F722 has no double-precision
+     * FPU, which is what made newlib's %f VFP path fault). */
+    float vdda_mv = (float)ADC_CAL_VREF_MV * (float)vrefint_cal / (float)vrefint_raw;
 
-    /* Temperature, two-point interpolation, output as T w.T tenths (0.1 C). */
-    unsigned long ts_norm = (unsigned long)ts_raw * vrefint_cal / vrefint_raw;
-    unsigned long temp_x10 = (30UL * 10UL)
-        + ((ts_norm - ts_cal1) * (110UL - 30UL) * 10UL) / (ts_cal2 - ts_cal1);
+    float ts_norm = (float)ts_raw * (float)vrefint_cal / (float)vrefint_raw;
+    float temp_c  = 30.0f + (ts_norm - (float)ts_cal1)
+                    * (110.0f - 30.0f) / ((float)ts_cal2 - (float)ts_cal1);
 
-    /* VBAT divided by 4 inside the chip; mV, split into whole V + 2 decimals. */
-    unsigned long vbat_mv = 4UL * vbat_raw * vdda_mv / ADC_MAX_VALUE;
+    float vbat_v = 4.0f * (float)vbat_raw * vdda_mv / (float)ADC_MAX_VALUE / 1000.0f;
 
-    printf("ADC: VREFINT raw=%lu cal=%lu -> VDDA=%lu mV | Temp=%lu.%lu C | "
-           "VBAT=%lu.%02lu V @ %lu Hz\r\n",
-           (unsigned long)vrefint_raw, (unsigned long)vrefint_cal,
-           vdda_mv,
-           temp_x10 / 10UL, temp_x10 % 10UL,
-           vbat_mv / 1000UL, (vbat_mv % 1000UL) / 10UL,
-           (unsigned long)SystemCoreClock);
+    printf("ADC: VREFINT raw=%lu cal=%u -> VDDA=%.0f mV | Temp=%.1f C | VBAT=%.2f V @ %lu Hz\r\n",
+           (unsigned long)vrefint_raw, (unsigned)vrefint_cal, vdda_mv,
+           temp_c, vbat_v, (unsigned long)SystemCoreClock);
 }
 
 /* ------------------------------------------------------------------------ */

@@ -81,13 +81,13 @@ function(stm32f722_apply_board TGT OPT)
         STM32F722xx USE_HAL_DRIVER)
 
     target_compile_options(${TGT} PRIVATE
-        -mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16
+        -mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16
         ${OPT_LIST} -g
         -ffunction-sections -fdata-sections ${_WARN_FLAGS}
     )
 
     set_target_properties(${TGT} PROPERTIES
-        LINK_FLAGS "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16 ${OPT} -Wl,--gc-sections -nostartfiles -Wl,-Map=${PROJECT_NAME}.map -T ${F722_LINKER_SCRIPT} -lc -lm"
+        LINK_FLAGS "-mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16 ${OPT} -Wl,--gc-sections -nostartfiles -Wl,-Map=${PROJECT_NAME}.map -T ${F722_LINKER_SCRIPT} -lc -lm"
     )
 
     # Silence newlib/libgcc's benign enum/stack-note warnings (see disco cmake).

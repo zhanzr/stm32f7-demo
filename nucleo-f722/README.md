@@ -44,8 +44,24 @@ The F7 **HAL + CMSIS drivers come from the single shared STM32Cube_FW_F7
 package** installed on this machine (see `../cmake/stm32cubef7.cmake` for the
 `STM32CUBE_F7` path - override with `-DSTM32CUBE_F7=`). Every board in this
 repo uses that one package; the board layer (`board/`, `cmake/`) and the
-projects live in each board's own folder. Override the core frequency with
-`BOARD_PLL_N` if needed.
+projects live in each board's own folder.
+
+## FPU: single-precision only (SFPU)
+
+The STM32F722ZE has an **SFPU** — a single-precision FPU only (no
+double-precision FPU; see the F722 datasheet). The board layer therefore
+builds with **`-mfloat-abi=hard -mfpu=fpv5-sp-d16`**:
+
+* C `float` math uses the single-precision VFP (`vmul.f32`/`vdiv.f32`) - fast.
+* C `double` math falls back to **software float** (libgcc) - the F722 has no
+  double-precision FPU, so the compiler must not emit double-VFP instructions.
+
+`board.c Board_Init()` also disables the divide-by-zero trap (`CCR.DIV_0_TRP`)
+so any internal integer divide-by-zero in newlib's `%f` formatter returns 0
+instead of HardFaulting. Together this lets `printf("%f", ...)` work exactly like on
+disco-f769 (which has a full double-precision FPU, so it uses `fpv5-d16`).
+`-mfloat-abi=soft` would also work but leaves the FPU idle for all float math;
+`fpv5-sp-d16` keeps the FPU for `float` and only routes `double` to software.
 
 ## Projects
 

@@ -1,0 +1,21 @@
+nucleo-f722: make %f work using the F722's single-precision FPU (SFPU)
+
+The F722 has an SFPU (single-precision FPU only, no double-precision FPU),
+per its datasheet. newlib's %f formatter scales floats to decimal with
+double-precision VFP instructions, which fault on the F722 (CFSR.DIVBYZERO
+inside _vfprintf_r, even for a constant float) - the core has no double-precision
+FPU, so those instructions are unusable.
+
+Build the nucleo-f722 board with -mfloat-abi=hard -mfpu=fpv5-sp-d16:
+  - C float math uses the single-precision VFP (vmul.f32/vdiv.f32) - fast.
+  - C double math falls back to software float (libgcc) - no double-VFP fault.
+board.c Board_Init() also disables the divide-by-zero trap (CCR.DIV_0_TRP) so
+newlib's %f internal integer divide-by-zero returns 0 instead of HardFaulting.
+
+Result: printf("%f", ...) works exactly like on disco-f769 (which has a full
+double-precision FPU, so it uses fpv5-d16). The FPU is enabled and used for
+float; only double is software. Verified on hardware:
+  ADC: VREFINT raw=1494 cal=1499 -> VDDA=3311 mV | Temp=46.6 C | VBAT=3.33 V
+
+This supersedes the earlier -mfloat-abi=soft workaround (which left the FPU idle
+for all float math) and the integer-format ADC workaround.

@@ -110,6 +110,11 @@ void Board_Init(void)
     SCB_EnableICache();
     SCB_EnableDCache();
 
+    /* newlib's %f formatter performs an internal divide-by-zero that the
+     * Cortex-M7's CCR.DIV_0_TRP trap turns into a HardFault. Disable the trap
+     * so %f works (the divide just yields 0 and formatting continues). */
+    SCB->CCR &= ~SCB_CCR_DIV_0_TRP_Msk;
+
     SystemClock_Config();   /* HSE 8 MHz bypass -> PLL -> 216 MHz */
     UART_Init();            /* USART3 (PD8 TX / PD9 RX) @ 115200 */
     SWV_Init();
