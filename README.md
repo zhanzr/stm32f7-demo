@@ -49,7 +49,11 @@ are in each board's `README.md`.
 
 * `blink_hello` - 3-LED blink + UART console (current frequency), and the
   on-chip ADC internal channels (die temperature / VREFINT / battery voltage).
-* (disco-f769) benchmarks, SDRAM/QSPI/LCD eth demos, QSPI boot - see
+* Benchmarks: `dhry_216m` (Dhrystone 2.1) and `coremark_216m` (CoreMark 1.0)
+  on both boards @ 216 MHz (nucleo-f722: 2.563 DMIPS/MHz / 924.35 CoreMark;
+  disco-f769: 1.370 DMIPS/MHz / 932.28 CoreMark - the Dhrystone gap is the
+  on-chip SRAM heap vs the external SDRAM heap).
+* (disco-f769) SDRAM/QSPI/LCD/eth demos, QSPI boot - see
   `disco-f769/README.md`.
 
 Measured benchmark scores are in each project's `README.md`.

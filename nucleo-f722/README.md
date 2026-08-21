@@ -3,6 +3,8 @@
 Firmware projects for the **NUCLEO-F722ZE** board (STM32F722ZE, Cortex-M7 @
 216 MHz).
 
+![NUCLEO-F722ZE board](board_images/board_0.webp)
+
 ## Board (hardware)
 
 * MCU: STM32F722ZETx (LQFP144, 512 KB flash, 256 KB RAM, 216 MHz max, FPU).
@@ -68,5 +70,7 @@ disco-f769 (which has a full double-precision FPU, so it uses `fpv5-d16`).
 | Project        | What it is                                     |
 | -------------- | ---------------------------------------------- |
 | `bare/blink_hello` | 3-LED blink + USART3 freq print + ADC internal channels |
+| `bare/dhry_216m` | Dhrystone 2.1 benchmark @ 216 MHz (2.563 DMIPS/MHz) |
+| `bare/coremark_216m` | CoreMark 1.0 @ 216 MHz (924.35 it/s, validated) |
 
 Each project folder has `build.sh`, `CMakeLists.txt`, `src/` and a `README.md`.

@@ -1,21 +1,23 @@
-nucleo-f722: make %f work using the F722's single-precision FPU (SFPU)
+nucleo-f722: add dhry_216m and coremark_216m benchmarks; embed board photo
 
-The F722 has an SFPU (single-precision FPU only, no double-precision FPU),
-per its datasheet. newlib's %f formatter scales floats to decimal with
-double-precision VFP instructions, which fault on the F722 (CFSR.DIVBYZERO
-inside _vfprintf_r, even for a constant float) - the core has no double-precision
-FPU, so those instructions are unusable.
+Port the disco-f769 benchmarks to the nucleo-f722 (same sources and
+optimization flags, -Ofast -ffp-contract=fast -funroll-loops, no LTO -
+GCC -flto hoists loop-invariant work out of the timed loop and would
+inflate the score):
 
-Build the nucleo-f722 board with -mfloat-abi=hard -mfpu=fpv5-sp-d16:
-  - C float math uses the single-precision VFP (vmul.f32/vdiv.f32) - fast.
-  - C double math falls back to software float (libgcc) - no double-VFP fault.
-board.c Board_Init() also disables the divide-by-zero trap (CCR.DIV_0_TRP) so
-newlib's %f internal integer divide-by-zero returns 0 instead of HardFaulting.
+- dhry_216m: Dhrystone 2.1 @ 216 MHz, 12,000,000 runs.
+  Measured: 972,841 Dhrystones/s = 2.563 DMIPS/MHz.
+- coremark_216m: CoreMark 1.0 @ 216 MHz, 25,000 iterations.
+  Measured: 924.35 iterations/s (27.05 s), "Correct operation validated."
 
-Result: printf("%f", ...) works exactly like on disco-f769 (which has a full
-double-precision FPU, so it uses fpv5-d16). The FPU is enabled and used for
-float; only double is software. Verified on hardware:
-  ADC: VREFINT raw=1494 cal=1499 -> VDDA=3311 mV | Temp=46.6 C | VBAT=3.33 V
+Both verified on hardware over the USART3 console. The Dhrystone score is
+much higher than disco-f769's 1.370 DMIPS/MHz because this board's malloc
+heap is in the on-chip SRAM1 (the disco's is in the external SDRAM,
+write-through); CoreMark is essentially unchanged (924 vs 932) since its
+malloc'd list is a small part of the workload.
 
-This supersedes the earlier -mfloat-abi=soft workaround (which left the FPU idle
-for all float math) and the integer-format ADC workaround.
+Docs: embed the NUCLEO-F722ZE board photo in nucleo-f722/README.md (from
+board_images/), record the measured results in both project READMEs and
+the board/root project tables, and note the SFPU single-precision FPU
+build in the benchmark notes. Also drop the accidentally committed
+_msg.txt scratch file.
