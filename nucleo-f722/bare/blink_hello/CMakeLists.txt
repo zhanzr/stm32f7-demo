@@ -4,9 +4,9 @@
 # toggle, plus the current core frequency and the on-chip ADC internal
 # channels (die temperature / VREFINT / VBAT).
 #
-# The F7 HAL + CMSIS come from the shared STM32Cube_FW_F7 package (see
-# ../../../cmake/stm32cubef7.cmake); the board layer (../../board) and this
-# project use the nucleo-f722 own folder.
+# The F7 HAL + CMSIS come from the vendored repo-root `drivers/` folder (see
+# ../../../cmake/stm32cubef7.cmake and ../../../drivers/README.md); the board
+# layer (../../board) and this project use the nucleo-f722 own folder.
 #
 # Workflow:
 #   bash build.sh          # default: GNU arm-none-eabi-gcc
@@ -24,7 +24,7 @@ set_property(CACHE STM32_TOOLCHAIN PROPERTY STRINGS gcc armclang)
 option(STM32_LTO "Enable -flto with the GCC toolchain" OFF)
 
 if(NOT CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../../../disco-f769/cmake/arm-none-eabi-toolchain.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/arm-none-eabi-toolchain.cmake")
 endif()
 
 project(blink_hello C ASM)
@@ -45,6 +45,6 @@ target_sources(${PROJECT_NAME}.elf PRIVATE
     ${F7_HAL}/Src/stm32f7xx_hal_adc_ex.c
 )
 
-# Generic objcopy targets (from the disco cmake) + this board's flash target.
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../../disco-f769/cmake/objcopy-targets.cmake)
+# Generic objcopy targets + this board's flash target.
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/objcopy-targets.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/flash-targets.cmake)

@@ -42,11 +42,15 @@ HSE 8 MHz (ST-Link MCO, bypass) -> PLL (M=8, N=432, P=2) -> SYSCLK 216 MHz
 
 ## Sharing the F7 HAL / CMSIS
 
-The F7 **HAL + CMSIS drivers come from the single shared STM32Cube_FW_F7
-package** installed on this machine (see `../cmake/stm32cubef7.cmake` for the
-`STM32CUBE_F7` path - override with `-DSTM32CUBE_F7=`). Every board in this
-repo uses that one package; the board layer (`board/`, `cmake/`) and the
-projects live in each board's own folder.
+The F7 **HAL + CMSIS drivers are VENDORED in the repo root `drivers/` folder**
+(a trimmed STM32Cube_FW_F7 v1.17.4 `Drivers` subtree - see `../drivers/README.md`),
+so the repo builds without any external package install. The location is
+resolved once in `../cmake/stm32cubef7.cmake`; to use a full STM32Cube_FW_F7
+package instead, configure with
+`-DSTM32F7_HAL_ROOT=<package>/Drivers`. The board layer (`board/`, `cmake/`)
+and the projects live in this board's own folder; the toolchain files
+(gcc / Keil armclang / ST starm-clang) are also this board's own, in
+`cmake/`.
 
 ## FPU: single-precision only (SFPU)
 
@@ -70,7 +74,13 @@ disco-f769 (which has a full double-precision FPU, so it uses `fpv5-d16`).
 | Project        | What it is                                     |
 | -------------- | ---------------------------------------------- |
 | `bare/blink_hello` | 3-LED blink + USART3 freq print + ADC internal channels |
-| `bare/dhry_216m` | Dhrystone 2.1 benchmark @ 216 MHz (2.563 DMIPS/MHz) |
-| `bare/coremark_216m` | CoreMark 1.0 @ 216 MHz (924.35 it/s, validated) |
+| `bare/dhry_216m` | Dhrystone 2.1 benchmark @ 216 MHz (best: 2.756 DMIPS/MHz, Keil AC6) |
+| `bare/coremark_216m` | CoreMark 1.0 @ 216 MHz (best: 1075.82 it/s, Keil AC6 `-Omax`) |
+
+The two benchmarks build with **arm-none-eabi-gcc** (default), **Keil Arm
+Compiler 6 (armclang)** and — CoreMark — **ST Arm clang** (starm-clang),
+selected with `-DSTM32_TOOLCHAIN=gcc|armclang|starm-clang` at configure time;
+optimization flags are the `BENCH_OPT` / C-only `BENCH_OPT_C` cache
+variables. Measured results are in each project's `README.md`.
 
 Each project folder has `build.sh`, `CMakeLists.txt`, `src/` and a `README.md`.

@@ -33,7 +33,9 @@ void uart_printf(const char *fmt, ...);
 #include <stdint.h>
 #include <stddef.h>
 
-#define FLAGS_STR "-Ofast -funroll-loops"
+/* Display-only label for the default GCC build (BENCH_OPT in CMakeLists.txt).
+ * Overridden per toolchain via -DCOMPILER_FLAGS when it differs. */
+#define FLAGS_STR "-Ofast -ffp-contract=fast -funroll-all-loops"
 #ifndef ITERATIONS
 #define ITERATIONS 25000
 #endif
