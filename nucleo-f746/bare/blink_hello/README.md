@@ -1,0 +1,43 @@
+# blink_hello - minimal STM32F746ZG (NUCLEO-F746ZG) template @ 216 MHz
+
+Toggles the three on-board LEDs (**LD1 PB0, LD2 PB7, LD3 PB14**, high active)
+and prints, on every toggle, a line over **USART3 (PD8 TX / PD9 RX, AF7)** to
+the ST-Link VCP at 115200: the current core frequency and the on-chip ADC
+internal channels (die temperature / VREFINT / VBAT). Same LED/UART wiring as
+the nucleo-f722 board.
+
+## Build & flash
+
+```bash
+bash build.sh          # == cmake -G Ninja .. && ninja  (GNU arm-none-eabi-gcc)
+ninja flash            # probe-rs (SWD) on the on-board ST-Link V2-1
+```
+
+`ninja flash` auto-detects the probe; if several ST-Links are attached, pin
+the nucleo one at configure time:
+
+```bash
+cmake -G Ninja -DDEBUG_PROBE=0483:3752:xxxx... ..   # select the nucleo probe
+ninja flash
+```
+
+Open the **USART3** console (`COMxx` @ 115200 via the ST-Link VCP). Every
+second you should see, e.g.:
+
+```
+=== blink_hello on STM32F746ZG @ 216000000 Hz ===
+ADC: VREFINT raw=1492 cal=1498 -> VDDA=3313 mV | Temp=44.9 C | VBAT=3.30 V @ 216000000 Hz
+```
+
+(measured on hardware; ADC calibration addresses come from
+`stm32f746xx.h` - VREFINT_CAL 0x1FF0F44A, TS_CAL1/2 0x1FF0F44C/0x1FF0F44E.)
+
+Note the nucleo HSE is the ST-Link MCO (8 MHz bypass), not a crystal; see the
+board README. The board layer builds with `-mfpu=fpv5-sp-d16` (single-precision
+FPU only - the F746 has an SFPU) so `float` math uses the FPU and `double`
+falls back to software; newlib's `%f` works (the full double-precision VFP path
+would fault on this silicon).
+
+The board layer (clock init to 216 MHz, USART3 console, SWV/ITM, startup,
+linker) is in `../../board/`; the F7 HAL + CMSIS come from the vendored
+repo-root `drivers/` folder (`../../../cmake/stm32cubef7.cmake`).

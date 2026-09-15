@@ -18,12 +18,16 @@ board's own `cmake/` folder.
 | ------------- | ------------------------- | ------------ | ---------------------------------- |
 | `disco-f769/` | STM32F769I-Discovery      | STM32F769NI  | USART1 (PA9/PA10), ST-Link V2 VCOM |
 | `nucleo-f722/`| NUCLEO-F722ZE             | STM32F722ZE  | USART3 (PD8/PD9), ST-Link VCP      |
+| `nucleo-f746/`| NUCLEO-F746ZG             | STM32F746ZG  | USART3 (PD8/PD9), ST-Link VCP      |
 
 * `disco-f769/` - the STM32F769I-Discovery board (216 MHz): benchmarks
   (`dhry_216m`, `coremark_216m`), SDRAM/QSPI/LCD/Ethernet demos, and external
   QSPI boot (`app_qspi/`, `tool/`). See `disco-f769/README.md`.
 * `nucleo-f722/` - the NUCLEO-F722ZE board (216 MHz), gcc/armclang/
   starm-clang benchmark builds. See `nucleo-f722/README.md`.
+* `nucleo-f746/` - the NUCLEO-F746ZG board (216 MHz); same LEDs/console
+  wiring as the nucleo-f722 (PB0/PB7/PB14 LEDs, USART3 PD8/PD9), with
+  `blink_hello` + the same benchmark set. See `nucleo-f746/README.md`.
 
 There is also a standalone `e_server/` (repo root) with the web app + reference
 backend used by the `disco-f769/bare/eth_http` demo.
@@ -51,9 +55,10 @@ are in each board's `README.md`.
 * `blink_hello` - 3-LED blink + UART console (current frequency), and the
   on-chip ADC internal channels (die temperature / VREFINT / battery voltage).
 * Benchmarks: `dhry_216m` (Dhrystone 2.1) and `coremark_216m` (CoreMark 1.0)
-  on both boards @ 216 MHz (nucleo-f722: up to 2.756 DMIPS/MHz / 1075.82
-  CoreMark with Keil AC6; disco-f769: 1.370 DMIPS/MHz / 932.28 CoreMark - the
-  Dhrystone gap is the on-chip SRAM heap vs the external SDRAM heap).
+  on all three boards @ 216 MHz (nucleo-f722 and nucleo-f746: up to 2.756
+  DMIPS/MHz / 1075.82 and 1061.93 CoreMark respectively with Keil AC6;
+  disco-f769: 1.370 DMIPS/MHz / 932.28 CoreMark - the Dhrystone gap is the
+  on-chip SRAM heap vs the external SDRAM heap).
 * (disco-f769) SDRAM/QSPI/LCD/eth demos, QSPI boot - see
   `disco-f769/README.md`.
 
