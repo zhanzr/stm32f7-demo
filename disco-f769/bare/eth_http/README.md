@@ -38,13 +38,12 @@ changed, never the whole frame.
 
 ## Bundled site (`Inc/web_assets.h`)
 
-The site sources live in the standalone `e_server/` project at the repo root
-(`e_server/web/` + `e_server/public/`) - edit them there, they are the single
-source of truth and other boards reuse them. `e_server/build_web.py` inlines
-the CSS/JS into `index.html`, gzips it (served with `Content-Encoding: gzip`),
-and embeds the photos as raw arrays with a `path -> {ctype, data, len}` table.
+The site sources live in this board's `../../e_server/` copy (`web/` +
+`public/`) - edit them there. `e_server/build_web.py` inlines the CSS/JS into
+`index.html`, gzips it (served with `Content-Encoding: gzip`), and embeds the
+photos as raw arrays with a `path -> {ctype, data, len}` table.
 `bash build.sh` regenerates `Inc/web_assets.h` from those sources
-automatically (`python e_server/build_web.py --out Inc/web_assets.h`).
+automatically (`python ../../e_server/build_web.py --out Inc/web_assets.h`).
 
 ## Further work: HTTPS client on the board
 

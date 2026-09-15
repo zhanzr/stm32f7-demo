@@ -82,6 +82,11 @@ like on nucleo-f722.
 | `bare/dhry_216m` | Dhrystone 2.1 benchmark @ 216 MHz (best: 2.756 DMIPS/MHz, Keil AC6) |
 | `bare/coremark_216m` | CoreMark 1.0 @ 216 MHz (best: 1061.93 it/s, Keil AC6 `-Omax`) |
 | `bare/ssd1306_md096_128x64_spi` | SSD1306 0.96" 128x64 mono OLED on SPI1 (integrated from the local `nucleo144-f746zg` repo; patterns per the f425-start I2C port) |
+| `bare/eth_http_server` | lwIP raw-API web server on the on-board Ethernet, **static IP 192.168.5.210** - serves this board's `e_server/` copy (LED/ADC/info tabs) |
+
+The board carries its own copy of the web app (`e_server/`, LED tab wired to
+PB0/PB7/PB14, sensor tab to the ADC internal channels) plus vendored
+`vendor/` lwIP + LAN8742 (from the disco's vendor tree).
 
 The two benchmarks build with **arm-none-eabi-gcc** (default), **Keil Arm
 Compiler 6 (armclang)** and — CoreMark — **ST Arm clang** (starm-clang),

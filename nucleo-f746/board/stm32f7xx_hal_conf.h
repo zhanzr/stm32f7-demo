@@ -44,6 +44,7 @@
 #define HAL_CORTEX_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
 #define HAL_SPI_MODULE_ENABLED
+#define HAL_ETH_MODULE_ENABLED
 
 /* ########################## HSE/HSI Values adaptation ##################### */
 /**
@@ -198,6 +199,14 @@
 #ifdef HAL_SPI_MODULE_ENABLED
   #include "stm32f7xx_hal_spi.h"
 #endif /* HAL_SPI_MODULE_ENABLED */
+
+#ifdef HAL_ETH_MODULE_ENABLED
+  #include "stm32f7xx_hal_eth.h"
+#endif /* HAL_ETH_MODULE_ENABLED */
+
+/* Ethernet PHY (LAN8742) MDIO access timeouts (as in the disco board conf). */
+#define PHY_READ_TO    0x0000FFFFU
+#define PHY_WRITE_TO   0x0000FFFFU
 
 /* Exported macro ------------------------------------------------------------*/
 #ifdef  USE_FULL_ASSERT

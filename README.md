@@ -27,10 +27,15 @@ board's own `cmake/` folder.
   starm-clang benchmark builds. See `nucleo-f722/README.md`.
 * `nucleo-f746/` - the NUCLEO-F746ZG board (216 MHz); same LEDs/console
   wiring as the nucleo-f722 (PB0/PB7/PB14 LEDs, USART3 PD8/PD9), with
-  `blink_hello` + the same benchmark set. See `nucleo-f746/README.md`.
+  `blink_hello`, the same benchmark set, an SSD1306 OLED demo and an
+  Ethernet web server (`eth_http_server`, static IP 192.168.5.210).
+  See `nucleo-f746/README.md`.
 
-There is also a standalone `e_server/` (repo root) with the web app + reference
-backend used by the `disco-f769/bare/eth_http` demo.
+The web app lives in a standalone `e_server/` folder at the repo root (web
+frontend + host-side reference C backend). Each Ethernet-capable board
+carries its own **copy** under its board folder (`disco-f769/e_server/`,
+`nucleo-f746/e_server/`) - the `web/` + `public/` sources there are what the
+board's projects pack into `web_assets.h` and serve.
 
 ## Build & flash
 
@@ -61,5 +66,8 @@ are in each board's `README.md`.
   on-chip SRAM heap vs the external SDRAM heap).
 * (disco-f769) SDRAM/QSPI/LCD/eth demos, QSPI boot - see
   `disco-f769/README.md`.
+* (nucleo-f746) `ssd1306_md096_128x64_spi` OLED demo, `eth_http_server`
+  web server (static IP 192.168.5.210, lwIP raw API) - see
+  `nucleo-f746/README.md`.
 
 Measured benchmark scores are in each project's `README.md`.
